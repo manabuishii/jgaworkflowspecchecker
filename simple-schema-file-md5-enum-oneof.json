@@ -44,6 +44,7 @@
     },
     "required": [
       "name",
-      "fq1"
+      "fq1",
+      "param3"
     ]
   }
