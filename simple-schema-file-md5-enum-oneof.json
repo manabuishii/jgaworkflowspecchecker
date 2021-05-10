@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "name": {
+        "description": "Name of the customer",
+        "type": "string",
+        "pattern": "^[A-Za-z0-9 ]+$"
+      },
+      "fq1":{
+        "description": "fq1 file path",
+        "type": "string"
+      },
+      "md5":{
+        "description": "md5 of fq1",
+        "type": "string"
+      },
+      "param1":{
+        "$id": "#a",
+        "description": "enum for animals",
+        "type": "string",
+        "enum": [
+          "dog",
+          "cat",
+          "monkey"
+        ]
+      },
+      "param2":{
+        "$id": "#b",
+        "description": "enum for fruits",
+        "type": "string",
+        "enum": [
+          "lemon",
+          "apple",
+          "banana"
+        ]
+      },
+      "param3":{
+        "description": "enum for fruits",
+        "type": "string",
+        
+        "oneOf": [{ "$ref": "#a" }, { "$ref": "#b" }]
+      }
+    },
+    "required": [
+      "name",
+      "fq1"
+    ]
+  }
