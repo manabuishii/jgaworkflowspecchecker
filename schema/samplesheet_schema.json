@@ -85,14 +85,14 @@
             "description": "platform",
             "type": "string"
         },
-        "list": {
+        "runlist": {
             "type": "array",
             "items": {
               "$ref": "#/properties/run"
             }
           }
         },
-        "required": ["sampleid","platform", "runidlist"]
+        "required": ["sampleid","platform", "runlist"]
     },
     "samplelist": {
       "type": "array",

@@ -13,10 +13,31 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+type RunData struct {
+	PE_1     string `json:"PE_1"`
+	PE_1_MD5 string `json:"PE_1_MD5"`
+	PE_2     string `json:"PE_2"`
+	PE_2_MD5 string `json:"PE_2_MD5"`
+	SE_1     string `json:"SE_1"`
+	SE_1_MD5 string `json:"SE_1_MD5"`
+}
+
+type Run struct {
+	RunId   string `json:"runid"`
+	RunData `json:"data"`
+}
+
+type Sample struct {
+	SampleId string `json:"sampleid"`
+	Platform string `json:"platform"`
+	RunList  []*Run `json:"runlist"`
+}
+
 type simpleSchema struct {
-	Name string `json:"name"`
-	Md5  string `json:"md5,omitempty"`
-	Fq1  string `json:"fq1"`
+	Name       string    `json:"name"`
+	Md5        string    `json:"md5,omitempty"`
+	Fq1        string    `json:"fq1"`
+	SampleList []*Sample `json:"samplelist"`
 }
 
 func md5File(filePath string) (string, error) {
@@ -36,6 +57,37 @@ func md5File(filePath string) (string, error) {
 	}
 
 	return hex.EncodeToString(hash.Sum(nil)[:16]), nil
+}
+
+func checkRunDataFile(fn string, fnmd5 string) (bool, error) {
+	// Check file is exist
+	if _, err := os.Stat(fn); os.IsNotExist(err) {
+		return false, err
+	}
+	// Check file hash value if specified
+	result := true
+	if fnmd5 != "" {
+		md5, _ := md5File(fn)
+		if fnmd5 != md5 {
+			result = false
+			fmt.Printf("expected: [%s]\n", fnmd5)
+			fmt.Printf("actual  : [%s]\n", md5)
+			fmt.Println("md5 is not match")
+		}
+	}
+	return result, nil
+}
+
+func checkRunData(runData *RunData) (bool, error) {
+	result := false
+	if runData.SE_1 == "" {
+		r1, _ := checkRunDataFile(runData.PE_1, runData.PE_1_MD5)
+		r2, _ := checkRunDataFile(runData.PE_2, runData.PE_2_MD5)
+		result = r1 && r2
+	} else {
+		result, _ = checkRunDataFile(runData.SE_1, runData.SE_1_MD5)
+	}
+	return result, nil
 }
 
 func main() {
@@ -75,23 +127,14 @@ func main() {
 	fmt.Printf("Fq1 is [%s]\n", ss.Fq1)
 	fmt.Printf("Md5 is [%s]\n", ss.Md5)
 
-	var fn string
-	fn = ss.Fq1
-	if _, err := os.Stat(fn); os.IsNotExist(err) {
-		fmt.Println("file doesn't exist")
-	} else {
-		fmt.Println("file exists")
-	}
-	if ss.Md5 != "" {
-		md5, _ := md5File(fn)
-		fmt.Printf("expected: [%s]\n", ss.Md5)
-		fmt.Printf("actual  : [%s]\n", md5)
-		if ss.Md5 == md5 {
-			fmt.Println("md5 is match")
-		} else {
-			fmt.Println("md5 is not match")
+	// validate
+	for i, s := range ss.SampleList {
+		fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
+		for j, t := range s.RunList {
+			fmt.Printf("index: %d, SampleId: %s\n", j, t.RunId)
+			r1, _ := checkRunData(&t.RunData)
+			fmt.Printf("result=%t\n", r1)
+
 		}
-	} else {
-		fmt.Println("md5 is not specified.")
 	}
 }

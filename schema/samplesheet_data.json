@@ -1,14 +1,15 @@
 {
+        "name": "aaabbb",
     "samplelist": [
         {
             "sampleid": "XX10000",
             "platform": "Illumina NovaSeq6000",
-            "runidlist": [
+            "runlist": [
                 {
-                    "runid": "hello runid",
+                    "runid": "hello runid1",
                     "data": {
-                        "SE_1": "lemon",
-                        "SE_1_MD5": "aa"
+                        "PE_1": "LICENSE",
+                        "PE_2": "LICENSE"
                     }
                 },
                 {
@@ -21,10 +22,10 @@
                 {
                     "runid": "hello runid3",
                     "data": {
-                        "PE_1": "lemon",
-                        "PE_1_MD5": "aa",
-                        "PE_2": "lemon",
-                        "PE_2_MD5": "aa"
+                        "PE_1": "LICENSE",
+                        "PE_1_MD5": "86d3f3a95c324c9479bd8986968f4327",
+                        "PE_2": "LICENSE",
+                        "PE_2_MD5": "86d3f3a95c324c9479bd8986968f4327"
                     }
                 }
             ]
@@ -32,28 +33,26 @@
         {
             "sampleid": "XX10001",
             "platform": "Illumina HiSeq2000",
-            "runidlist": [
+            "runlist": [
                 {
-                    "runid": "hello runid",
+                    "runid": "hello runid4",
                     "data": {
-                        "SE_1": "lemon",
+                        "SE_1": "LICENSE"
+                    }
+                },
+                {
+                    "runid": "hello runid5",
+                    "data": {
+                        "SE_1": "LICENSE",
                         "SE_1_MD5": "aa"
                     }
                 },
                 {
-                    "runid": "hello runid2",
+                    "runid": "hello runid6",
                     "data": {
-                        "SE_1": "lemon",
-                        "SE_1_MD5": "aa"
-                    }
-                },
-                {
-                    "runid": "hello runid3",
-                    "data": {
-                        "PE_1": "lemon",
-                        "PE_1_MD5": "aa",
-                        "PE_2": "lemon",
-                        "PE_2_MD5": "aa"
+                        "PE_1": "LICENSE",
+                        "PE_1_MD5": "86d3f3a95c324c9479bd8986968f4327",
+                        "PE_2": "lemon"
                     }
                 }
             ]
