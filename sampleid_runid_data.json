@@ -1,0 +1,13 @@
+{
+    
+    "sample":  {
+        "sampleid": "hello sample",
+        "data": {
+            "runid": "hello runid",
+            "data": {
+                "SE_1": "lemon",
+                "SE_1_MD5": "aa"
+            }
+        }
+    }
+}

@@ -1,0 +1,94 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "name": {
+        "description": "Name of the customer",
+        "type": "string",
+        "pattern": "^[A-Za-z0-9 ]+$"
+      },
+      "fq1":{
+        "description": "fq1 file path",
+        "type": "string"
+      },
+      "md5":{
+        "description": "md5 of fq1",
+        "type": "string"
+      },
+      "pe":{
+        "$id": "#pe",
+        "description": "Pair End",
+        "type": "object",
+        "properties": {
+          "PE_1": {
+            "description": "File path PE_1",
+            "type": "string"
+          },
+          "PE_1_MD5": {
+            "description": "File path PE_1 MD5",
+            "type": "string"
+          },
+          "PE_2": {
+            "description": "File path PE_2",
+            "type": "string"
+          },
+          "PE_2_MD5": {
+            "description": "File path PE_2 MD5",
+            "type": "string"
+          }
+        },
+        "required": [ "PE_1", "PE_2" ]
+      },
+      "se":{
+        "$id": "#se",
+        "description": "Single End",
+        "type": "object",
+        "properties": {
+          "SE_1": {
+            "description": "File Path SE_1",
+            "type": "string"
+          },
+          "SE_1_MD5": {
+            "description": "File path SE_1 MD5",
+            "type": "string"
+          }
+        },
+        "required": [ "SE_1" ]
+      },
+      "pe_or_se":{
+        "description": "enum for PE or SE",
+        "type": "object",
+        
+        "oneOf": [{ "$ref": "#pe" }, { "$ref": "#se" }]
+      },
+      "run": {
+          "type": "object",
+          "properties": {
+            "runid": {
+                "description": "run id",
+                "type": "string"
+            },
+            "data": {
+                "$ref": "#/properties/pe_or_se"
+            }
+          },
+          "required": ["runid", "data"]
+      },
+      "sample": {
+        "type": "object",
+        "properties": {
+          "sampleid": {
+              "description": "sample id",
+              "type": "string"
+          },
+          "data": {
+              "$ref": "#/properties/run"
+          }
+        },
+        "required": ["sampleid", "data"]
+    }
+  },
+    "required": [
+      "sample"
+    ]
+  }
