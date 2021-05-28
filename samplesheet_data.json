@@ -2,6 +2,7 @@
     "samplelist": [
         {
             "sampleid": "XX10000",
+            "platform": "Illumina NovaSeq6000",
             "runidlist": [
                 {
                     "runid": "hello runid",
@@ -30,6 +31,7 @@
         },
         {
             "sampleid": "XX10001",
+            "platform": "Illumina HiSeq2000",
             "runidlist": [
                 {
                     "runid": "hello runid",

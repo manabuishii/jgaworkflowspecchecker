@@ -81,14 +81,18 @@
               "description": "sample id",
               "type": "string"
           },
-          "list": {
+          "platform": {
+            "description": "platform",
+            "type": "string"
+        },
+        "list": {
             "type": "array",
             "items": {
               "$ref": "#/properties/run"
             }
           }
         },
-        "required": ["sampleid", "runidlist"]
+        "required": ["sampleid","platform", "runidlist"]
     },
     "samplelist": {
       "type": "array",
