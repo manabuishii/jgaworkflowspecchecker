@@ -24,6 +24,7 @@ type RunData struct {
 
 type Run struct {
 	RunId   string `json:"runid"`
+	PEOrSE  string `json:"PE_or_SE"`
 	RunData `json:"data"`
 }
 
@@ -137,4 +138,49 @@ func main() {
 
 		}
 	}
+	// reference config validate
+
+	// MUST must be canonical
+	rschemaLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + os.Args[3])
+	// MUST must be canonical
+	rdocumentLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + os.Args[4])
+
+	rresult, err := gojsonschema.Validate(rschemaLoader, rdocumentLoader)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	if rresult.Valid() {
+		fmt.Printf("The reference config document is valid\n")
+	} else {
+		fmt.Printf("The reference config document is not valid. see errors :\n")
+		for _, desc := range rresult.Errors() {
+			fmt.Printf("- %s\n", desc)
+		}
+	}
+	// fmt.Println("Load sample")
+	// raw, err := ioutil.ReadFile(os.Args[2])
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// 	os.Exit(1)
+	// }
+
+	// var ss simpleSchema
+
+	// json.Unmarshal(raw, &ss)
+	// fmt.Println("Load end")
+	// fmt.Printf("Name is [%s]\n", ss.Name)
+	// fmt.Printf("Fq1 is [%s]\n", ss.Fq1)
+	// fmt.Printf("Md5 is [%s]\n", ss.Md5)
+
+	// // validate
+	// for i, s := range ss.SampleList {
+	// 	fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
+	// 	for j, t := range s.RunList {
+	// 		fmt.Printf("index: %d, SampleId: %s\n", j, t.RunId)
+	// 		r1, _ := checkRunData(&t.RunData)
+	// 		fmt.Printf("result=%t\n", r1)
+
+	// 	}
+	// }
 }

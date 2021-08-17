@@ -1,0 +1,23 @@
+{
+    "name": "reference",
+    "reference": {
+        "path": "./referencepath"
+    },
+    "sortsam_max_records_in_ram": 5000000,
+    "sortsam_java_options": "-XX:-UseContainerSupport -Xmx30g",
+    "bwa_num_threads": 16,
+    "bwa_bases_per_batch": 10000000,
+    "use_bqsr": false,
+    "dbsnp": {
+        "path": "./dbsnppath"
+    },
+    "mills": {
+        "path": "./millspath"
+    },
+    "known_indels": {
+        "path": "./known_indelspath"
+    },
+    "samtools_num_threads": 1,
+    "gatk4_HaplotypeCaller_num_threads": 16,
+    "bgzip_num_threads": 16
+}
