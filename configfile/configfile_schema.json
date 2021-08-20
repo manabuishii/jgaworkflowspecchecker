@@ -1,0 +1,123 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "name": {
+        "description": "Name of reference",
+        "type": "string",
+        "pattern": "^[A-Za-z0-9 ]+$"
+      },
+      "reference":{
+        "$id": "#reference",
+        "description": "Reference",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "File path of reference",
+            "type": "string"
+          },
+          "format": {
+            "description": "Format of reference",
+            "type": "string"
+          }
+        },
+        "required": [ "path" ]
+      },
+      "sortsam_max_records_in_ram": {
+        "description": "",
+        "type": "integer"
+      },
+      "sortsam_java_options": {
+        "description": "",
+        "type": "string"
+      },
+      "bwa_num_threads": {
+        "description": "",
+        "type": "integer"
+      },
+      "bwa_bases_per_batch": {
+        "description": "",
+        "type": "integer"
+      },
+      "use_bqsr": {
+        "description": "",
+        "type": "boolean"
+      },
+      "dbsnp":{
+        "$id": "#dbsnp",
+        "description": "dbsnp",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "File path of dbsnp",
+            "type": "string"
+          },
+          "format": {
+            "description": "Format of dbsnp",
+            "type": "string"
+          }
+        },
+        "required": [ "path" ]
+      },
+      "mills":{
+        "$id": "#mills",
+        "description": "mills",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "File path of mills",
+            "type": "string"
+          },
+          "format": {
+            "description": "Format of mills",
+            "type": "string"
+          }
+        },
+        "required": [ "path" ]
+      },
+      "known_indels":{
+        "$id": "#known_indels",
+        "description": "known_indels",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "File path of known_indels",
+            "type": "string"
+          },
+          "format": {
+            "description": "Format of known_indels",
+            "type": "string"
+          }
+        },
+        "required": [ "path" ]
+      },
+      "samtools_num_threads": {
+        "description": "",
+        "type": "integer"       
+      },
+      "gatk4_HaplotypeCaller_num_threads": {
+        "description": "",
+        "type": "integer"
+      },
+      "bgzip_num_threads": {
+        "description": "",
+        "type": "integer"
+      }
+  },
+
+  "required": [
+      "name",
+      "reference",
+      "sortsam_max_records_in_ram",
+      "sortsam_java_options",
+      "bwa_num_threads",
+      "bwa_bases_per_batch",
+      "use_bqsr",
+      "dbsnp",
+      "mills",
+      "known_indels",
+      "samtools_num_threads",
+      "gatk4_HaplotypeCaller_num_threads",
+      "bgzip_num_threads"
+  ]
+}
