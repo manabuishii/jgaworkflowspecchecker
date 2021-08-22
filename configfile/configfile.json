@@ -19,5 +19,18 @@
     },
     "samtools_num_threads": 1,
     "gatk4_HaplotypeCaller_num_threads": 16,
-    "bgzip_num_threads": 16
+    "bgzip_num_threads": 16,
+    "haplotypecaller_autosome_PAR_ploidy_2_interval_bed":{
+        "path": "./autosome_PAR_ploidy_2"
+    },
+    "haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed":{
+        "path": "./chrX_nonPAR_ploidy_2"
+    },
+    "haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed":{
+        "path": "./chrX_nonPAR_ploidy_1"
+    },
+    "haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed":{
+        "path": "./chrY_nonPAR_ploidy_1"
+    }
+
 }
