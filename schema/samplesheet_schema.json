@@ -7,59 +7,65 @@
         "type": "string",
         "pattern": "^[A-Za-z0-9 ]+$"
       },
-      "fq1":{
-        "description": "fq1 file path",
-        "type": "string"
-      },
-      "md5":{
-        "description": "md5 of fq1",
-        "type": "string"
-      },
       "pe":{
         "$id": "#pe",
         "description": "Pair End",
         "type": "object",
         "properties": {
-          "PE_1": {
+          "se_or_pe": {
+            "description": "For Pair End",
+            "type": "string",
+            "enum": [
+              "PE"
+            ]
+          },
+          "fq1": {
             "description": "File path PE_1",
             "type": "string"
           },
-          "PE_1_MD5": {
+          "fq1_MD5": {
             "description": "File path PE_1 MD5",
             "type": "string"
           },
-          "PE_2": {
+          "fq2": {
             "description": "File path PE_2",
             "type": "string"
           },
-          "PE_2_MD5": {
+          "fq2_MD5": {
             "description": "File path PE_2 MD5",
             "type": "string"
           }
         },
-        "required": [ "PE_1", "PE_2" ]
+        "required": [ "se_or_pe", "fq1", "fq2" ]
       },
       "se":{
         "$id": "#se",
         "description": "Single End",
         "type": "object",
         "properties": {
-          "SE_1": {
+          "se_or_pe": {
+            "description": "For Single End",
+            "type": "string",
+            "enum": [
+              "SE"
+            ]
+          },
+          "fq1": {
             "description": "File Path SE_1",
             "type": "string"
           },
-          "SE_1_MD5": {
+          "fq1_MD5": {
             "description": "File path SE_1 MD5",
             "type": "string"
           }
         },
-        "required": [ "SE_1" ]
+        "required": [ "se_or_pe", "fq1" ]
       },
-      "pe_or_se":{
-        "description": "enum for PE or SE",
+      "se_or_pe_data":{
+        "description": "enum for SE or PE",
         "type": "object",
         
-        "oneOf": [{ "$ref": "#pe" }, { "$ref": "#se" }]
+        "oneOf": [{ "$ref": "#se" }, { "$ref": "#pe" }]
       },
       "run": {
           "type": "object",
@@ -69,7 +75,7 @@
                 "type": "string"
             },
             "data": {
-                "$ref": "#/properties/pe_or_se"
+                "$ref": "#/properties/se_or_pe_data"
             }
           },
           "required": ["runid", "data"]

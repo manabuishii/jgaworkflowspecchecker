@@ -8,24 +8,27 @@
                 {
                     "runid": "hello runid1",
                     "data": {
-                        "PE_1": "LICENSE",
-                        "PE_2": "LICENSE"
+                        "se_or_pe": "PE",
+                        "fq1": "LICENSE",
+                        "fq2": "LICENSE"
                     }
                 },
                 {
                     "runid": "hello runid2",
                     "data": {
-                        "SE_1": "lemon",
-                        "SE_1_MD5": "aa"
+                        "se_or_pe": "SE",
+                        "fq1": "lemon",
+                        "fq1_MD5": "aa"
                     }
                 },
                 {
                     "runid": "hello runid3",
                     "data": {
-                        "PE_1": "LICENSE",
-                        "PE_1_MD5": "86d3f3a95c324c9479bd8986968f4327",
-                        "PE_2": "LICENSE",
-                        "PE_2_MD5": "86d3f3a95c324c9479bd8986968f4327"
+                        "se_or_pe": "PE",
+                        "fq1": "LICENSE",
+                        "fq1_MD5": "86d3f3a95c324c9479bd8986968f4327",
+                        "fq2": "LICENSE",
+                        "fq2_MD5": "86d3f3a95c324c9479bd8986968f4327"
                     }
                 }
             ]
@@ -37,22 +40,25 @@
                 {
                     "runid": "hello runid4",
                     "data": {
-                        "SE_1": "LICENSE"
+                        "se_or_pe": "SE",
+                        "fq1": "LICENSE"
                     }
                 },
                 {
                     "runid": "hello runid5",
                     "data": {
-                        "SE_1": "LICENSE",
-                        "SE_1_MD5": "aa"
+                        "se_or_pe": "SE",
+                        "fq1": "LICENSE",
+                        "fq1_MD5": "aa"
                     }
                 },
                 {
                     "runid": "hello runid6",
                     "data": {
-                        "PE_1": "LICENSE",
-                        "PE_1_MD5": "86d3f3a95c324c9479bd8986968f4327",
-                        "PE_2": "lemon"
+                        "se_or_pe": "PE",
+                        "fq1": "LICENSE",
+                        "fq1_MD5": "86d3f3a95c324c9479bd8986968f4327",
+                        "fq2": "lemon"
                     }
                 }
             ]
