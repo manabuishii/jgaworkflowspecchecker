@@ -73,6 +73,12 @@ type referenceSchema struct {
 	HaplotypecallerChrYNonPARPloidy1IntervalBed  *PathObject `json:"haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed"`
 }
 
+//
+var version string
+var revision string
+
+//
+
 func md5File(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 
@@ -276,17 +282,24 @@ func execCWL(sampleId string) string {
 }
 
 var helpFlag bool
+var versionFlag bool
 var fileExistsCheckFlag bool
 var fileHashCheckFlag bool
 
 func main() {
-	flag.BoolVarP(&helpFlag, "help", "h", false, "show help message")
+	flag.BoolVarP(&helpFlag, "help", "h", false, "Show help message")
+	flag.BoolVarP(&versionFlag, "version", "v", false, "Show version")
 	flag.BoolVarP(&fileExistsCheckFlag, "file-exists-check", "", true, "Check file exists")
 	flag.BoolVarP(&fileHashCheckFlag, "file-hash-check", "", true, "Check file hash value")
 	flag.Parse()
 
 	if helpFlag {
+		fmt.Printf("Version: %s-%s\n", version, revision)
 		flag.PrintDefaults()
+		return
+	}
+	if versionFlag {
+		fmt.Printf("Version: %s-%s\n", version, revision)
 		return
 	}
 	//return
