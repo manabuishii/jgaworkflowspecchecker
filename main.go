@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
@@ -125,50 +127,137 @@ func checkRunData(runData *RunData) (bool, error) {
 	return result, nil
 }
 
-func outputReference(rss *referenceSchema) (bool, error) {
-	fmt.Println("")
-	fmt.Printf("reference:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.Reference.Path)
-	fmt.Printf("  format: http://edamontology.org/format_1929\n")
-	fmt.Printf("sortsam_max_records_in_ram: %d\n", rss.SortsamMaxRecordsInRam)
-	fmt.Printf("sortsam_java_options: %s\n", rss.SortsamJavaOptions)
-	fmt.Printf("bwa_num_threads: %d\n", rss.BwaNumThreads)
-	fmt.Printf("bwa_bases_per_batch: %d\n", rss.BwaBasesPerBatch)
-	fmt.Printf("use_bqsr: %t\n", rss.UseBqsr)
-	fmt.Printf("dbsnp:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.Dbsnp.Path)
-	fmt.Printf("  format: http://edamontology.org/format_3016\n")
-	fmt.Printf("mills:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.Mills.Path)
-	fmt.Printf("  format: http://edamontology.org/format_3016\n")
-	fmt.Printf("known_indels:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.KnownIndels.Path)
-	fmt.Printf("  format: http://edamontology.org/format_3016\n")
-	fmt.Printf("samtools_num_threads: %d\n", rss.SamtoolsNumThreads)
-	fmt.Printf("gatk4_HaplotypeCaller_num_threads: %d\n", rss.Gatk4HaplotypeCallerNumThreads)
-	fmt.Printf("bgzip_num_threads: %d\n", rss.BgzipNumThreads)
-	fmt.Printf("haplotypecaller_autosome_PAR_ploidy_2_interval_bed:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.HaplotypecallerAutosomePARPloidy2IntervalBed.Path)
-	fmt.Printf("  format: http://edamontology.org/format_3584\n")
-	fmt.Printf("haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.HaplotypecallerChrXNonPARPloidy2IntervalBed.Path)
-	fmt.Printf("  format: http://edamontology.org/format_3584\n")
-	fmt.Printf("haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.HaplotypecallerChrXNonPARPloidy1IntervalBed.Path)
-	fmt.Printf("  format: http://edamontology.org/format_3584\n")
-	fmt.Printf("haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.HaplotypecallerChrYNonPARPloidy1IntervalBed.Path)
-	fmt.Printf("  format: http://edamontology.org/format_3584\n")
+func outputReference(rss *referenceSchema) (string, error) {
+	var byteBuf bytes.Buffer
+	byteBuf.WriteString("")
+	byteBuf.WriteString("reference:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.Reference.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_1929\n")
+	byteBuf.WriteString(fmt.Sprintf("sortsam_max_records_in_ram: %d\n", rss.SortsamMaxRecordsInRam))
+	byteBuf.WriteString(fmt.Sprintf("sortsam_java_options: %s\n", rss.SortsamJavaOptions))
+	byteBuf.WriteString(fmt.Sprintf("bwa_num_threads: %d\n", rss.BwaNumThreads))
+	byteBuf.WriteString(fmt.Sprintf("bwa_bases_per_batch: %d\n", rss.BwaBasesPerBatch))
+	byteBuf.WriteString(fmt.Sprintf("use_bqsr: %t\n", rss.UseBqsr))
+	byteBuf.WriteString("dbsnp:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.Dbsnp.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3016\n")
+	byteBuf.WriteString("mills:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.Mills.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3016\n")
+	byteBuf.WriteString("known_indels:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.KnownIndels.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3016\n")
+	byteBuf.WriteString(fmt.Sprintf("samtools_num_threads: %d\n", rss.SamtoolsNumThreads))
+	byteBuf.WriteString(fmt.Sprintf("gatk4_HaplotypeCaller_num_threads: %d\n", rss.Gatk4HaplotypeCallerNumThreads))
+	byteBuf.WriteString(fmt.Sprintf("bgzip_num_threads: %d\n", rss.BgzipNumThreads))
+	byteBuf.WriteString("haplotypecaller_autosome_PAR_ploidy_2_interval_bed:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerAutosomePARPloidy2IntervalBed.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3584\n")
+	byteBuf.WriteString("haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerChrXNonPARPloidy2IntervalBed.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3584\n")
+	byteBuf.WriteString("haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerChrXNonPARPloidy1IntervalBed.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3584\n")
+	byteBuf.WriteString("haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerChrYNonPARPloidy1IntervalBed.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3584\n")
 
-	return true, nil
+	return byteBuf.String(), nil
+}
+
+// call per sample
+func outputJobFile(s *Sample, rss *referenceSchema) (string, error) {
+	//
+	var byteBuf bytes.Buffer
+
+	// count SE and PE entry
+	numOfSE := 0
+	numOfPE := 0
+	for _, t := range s.RunList {
+		if t.RunData.PEOrSE == "SE" {
+			numOfSE = numOfSE + 1
+		}
+		if t.RunData.PEOrSE == "PE" {
+			numOfPE = numOfPE + 1
+		}
+	}
+	//
+	byteBuf.WriteString(fmt.Sprintf("sample_id: %s\n", s.SampleId))
+	if numOfPE == 0 {
+		byteBuf.WriteString("runlist_pe: []\n")
+	} else {
+		byteBuf.WriteString("runlist_pe:\n")
+		for _, t := range s.RunList {
+			if t.RunData.PEOrSE != "PE" {
+				continue
+			}
+			byteBuf.WriteString(fmt.Sprintf("  - run_id: %s\n", t.RunId))
+			byteBuf.WriteString("    platform_name: ILLUMINA\n")
+			byteBuf.WriteString("    fastq1:\n")
+			byteBuf.WriteString("      class: File\n")
+			byteBuf.WriteString(fmt.Sprintf("      path: %s\n", t.RunData.FQ1))
+			byteBuf.WriteString("      format: http://edamontology.org/format_1930\n")
+			byteBuf.WriteString("    fastq2:\n")
+			byteBuf.WriteString("      class: File\n")
+			byteBuf.WriteString(fmt.Sprintf("      path: %s\n", t.RunData.FQ2))
+			byteBuf.WriteString("      format: http://edamontology.org/format_1930\n")
+		}
+	}
+	if numOfSE == 0 {
+		byteBuf.WriteString("runlist_se: []\n")
+	} else {
+		byteBuf.WriteString("runlist_se:\n")
+		for _, t := range s.RunList {
+			if t.RunData.PEOrSE != "SE" {
+				continue
+			}
+			byteBuf.WriteString(fmt.Sprintf("  - run_id: %s\n", t.RunId))
+			byteBuf.WriteString("    platform_name: ILLUMINA\n")
+			byteBuf.WriteString("    fastq1:\n")
+			byteBuf.WriteString("      class: File\n")
+			byteBuf.WriteString(fmt.Sprintf("      path: %s\n", t.RunData.FQ1))
+			byteBuf.WriteString("      format: http://edamontology.org/format_1930\n")
+		}
+	}
+
+	return byteBuf.String(), nil
+}
+
+func createJobFile(ss *simpleSchema, rss *referenceSchema) error {
+	for _, s := range ss.SampleList {
+		// create file
+		//
+		filename := fmt.Sprintf("%s_jobfile.yaml", s.SampleId)
+		file, err := os.Create(filename)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		writer := bufio.NewWriter(file)
+		// output reference data to job file per each sampleID
+		referenceData, _ := outputReference(rss)
+		if _, err := writer.WriteString(referenceData); err != nil {
+			return err
+		}
+		sampleData, _ := outputJobFile(s, rss)
+		if _, err := writer.WriteString(sampleData); err != nil {
+			return err
+		}
+
+		// Flush
+		writer.Flush()
+
+	}
+	return nil
 }
 
 var helpFlag bool
@@ -220,19 +309,10 @@ func main() {
 	fmt.Println("Load end")
 	fmt.Printf("Name is [%s]\n", ss.Name)
 
-	//
-	numOfPE := 0
-	numOfSE := 0
 	// validate
 	for i, s := range ss.SampleList {
 		fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
 		for j, t := range s.RunList {
-			if t.RunData.PEOrSE == "SE" {
-				numOfSE = numOfSE + 1
-			}
-			if t.RunData.PEOrSE == "PE" {
-				numOfPE = numOfPE + 1
-			}
 			fmt.Println(t)
 			fmt.Printf("index: %d, RunId: %s\n", j, t.RunId)
 			fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
@@ -276,67 +356,6 @@ func main() {
 	json.Unmarshal(rraw, &rss)
 	fmt.Println("Load end")
 
-	// output job file for CWL per each sampleID
-	outputReference(&rss)
-	for _, s := range ss.SampleList {
-		fmt.Printf("sample_id: %s\n", s.SampleId)
-		if numOfPE == 0 {
-			fmt.Printf("runlist_pe: []\n")
-		} else {
-			fmt.Printf("runlist_pe:\n")
-			for _, t := range s.RunList {
-				if t.RunData.PEOrSE != "PE" {
-					continue
-				}
-				fmt.Printf("  - run_id: %s\n", t.RunId)
-				fmt.Printf("    platform_name: ILLUMINA\n")
-				fmt.Printf("    fastq1:\n")
-				fmt.Printf("      class: File\n")
-				fmt.Printf("      path: %s\n", t.RunData.FQ1)
-				fmt.Printf("      format: http://edamontology.org/format_1930\n")
-				fmt.Printf("    fastq2:\n")
-				fmt.Printf("      class: File\n")
-				fmt.Printf("      path: %s\n", t.RunData.FQ2)
-				fmt.Printf("      format: http://edamontology.org/format_1930\n")
-
-				//r1, _ := checkRunData(&t.RunData)
-				//fmt.Printf("result=%t\n", r1)
-			}
-
-		}
-		if numOfSE == 0 {
-			fmt.Printf("runlist_se: []\n")
-		} else {
-			fmt.Printf("runlist_se:\n")
-			for _, t := range s.RunList {
-				if t.RunData.PEOrSE != "SE" {
-					continue
-				}
-				fmt.Printf("  - run_id: %s\n", t.RunId)
-				fmt.Printf("    platform_name: ILLUMINA\n")
-				fmt.Printf("    fastq1:\n")
-				fmt.Printf("      class: File\n")
-				fmt.Printf("      path: %s\n", t.RunData.FQ1)
-				fmt.Printf("      format: http://edamontology.org/format_1930\n")
-
-				//r1, _ := checkRunData(&t.RunData)
-				//fmt.Printf("result=%t\n", r1)
-			}
-
-		}
-
-	}
-
-	// fmt.Printf("Md5 is [%s]\n", ss.Md5)
-
-	// // validate
-	// for i, s := range ss.SampleList {
-	// 	fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
-	// 	for j, t := range s.RunList {
-	// 		fmt.Printf("index: %d, SampleId: %s\n", j, t.RunId)
-	// 		r1, _ := checkRunData(&t.RunData)
-	// 		fmt.Printf("result=%t\n", r1)
-
-	// 	}
-	// }
+	// create job file for CWL
+	createJobFile(&ss, &rss)
 }
