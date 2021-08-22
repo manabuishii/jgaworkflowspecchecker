@@ -333,18 +333,28 @@ func main() {
 	fmt.Printf("Name is [%s]\n", ss.Name)
 
 	// validate
+	checkResult := false
 	for i, s := range ss.SampleList {
-		fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
+		fmt.Printf("Check index: %d, SampleId: %s\n", i, s.SampleId)
 		for j, t := range s.RunList {
-			fmt.Println(t)
-			fmt.Printf("index: %d, RunId: %s\n", j, t.RunId)
-			fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
-			fmt.Printf("fq1: [%s]\n", t.RunData.FQ1)
-			fmt.Printf("fq2: [%s]\n", t.RunData.FQ2)
+			// fmt.Println(t)
+			// fmt.Printf("index: %d, RunId: %s\n", j, t.RunId)
+			// fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
+			// fmt.Printf("fq1: [%s]\n", t.RunData.FQ1)
+			// fmt.Printf("fq2: [%s]\n", t.RunData.FQ2)
 			r1, _ := checkRunData(&t.RunData)
-			fmt.Printf("result=%t\n", r1)
-
+			checkResult = checkResult || r1
+			if r1 {
+				fmt.Println("Some error found. Not exist or Hash value error")
+				fmt.Printf("Check index: %d, RunId: %s\n", j, t.RunId)
+				fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
+				fmt.Printf("fq1: [%s]\n", t.RunData.FQ1)
+				fmt.Printf("fq2: [%s]\n", t.RunData.FQ2)
+				fmt.Printf("result=%t\n", r1)
+			}
 		}
+	}
+	if checkResult {
 	}
 	// reference config validate
 
