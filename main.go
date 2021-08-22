@@ -9,10 +9,14 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/xeipuuv/gojsonschema"
+	"golang.org/x/sync/errgroup"
+
 	// for CLI
 	flag "github.com/spf13/pflag"
 )
@@ -260,6 +264,25 @@ func createJobFile(ss *simpleSchema, rss *referenceSchema) error {
 	return nil
 }
 
+func execCWL(sampleId string) string {
+	// execute toil
+	// time TOIL_SLURM_ARGS="-w at11[5-9]" toil-cwl-runner --maxDisk 248G --maxMemory 64G --defaultMemory 32000 --defaultDisk 32000 --workDir `pwd` --disableCaching --jobStore ./jobstore52-generated-0pe4se --outdir ./20210822-toil-52-generated-0pe4se --stats --cleanWorkDir never  --batchSystem slurm --retryCount 1 --singularity --logFile cwltoil52-generated-0pe4se.log per-sample/Workflows/per-sample.cwl HG00174_jobfile.yaml
+	p, _ := os.Getwd()
+	c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
+	// c1 := exec.Command("echo", p)
+	//c1.Env = append(os.Environ(), "TOIL_SLURM_ARGS=\"-w at11[5-9]\"")
+	c1.Start()
+	c1.Wait()
+	// c3 := exec.Command("which", "python")
+	// var b3 bytes.Buffer
+	// c3.Stdout = &b3
+	// c3.Start()
+	// c3.Wait()
+	// io.Copy(os.Stdout, &b3)
+	// fmt.Printf("End: [%d] %s\n", i, time.Now())
+	return ""
+}
+
 var helpFlag bool
 var fileExistsCheckFlag bool
 var fileHashCheckFlag bool
@@ -358,4 +381,43 @@ func main() {
 
 	// create job file for CWL
 	createJobFile(&ss, &rss)
+
+	// wait
+	// var eg errgroup.Group
+	// for i := 1; i < 3; i++ {
+	// 	i := i
+	// 	eg.Go(func() error {
+	// 		// time.Sleep(2 * time.Second) // 長い処理
+	// 		// if i > 90 {
+	// 		// 	fmt.Println("Error:", i)
+	// 		// 	return fmt.Errorf("Error occurred: %d", i)
+	// 		// }
+	// 		// fmt.Println("End:", i)
+	// 		execCWL(i)
+	// 		return nil
+	// 	})
+	// }
+	// if err := eg.Wait(); err != nil {
+	// 	log.Fatal(err)
+	// }
+	// exec and wait
+	var eg errgroup.Group
+	for i, s := range ss.SampleList {
+		fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
+		sampleId := s.SampleId
+		eg.Go(func() error {
+			// time.Sleep(2 * time.Second) // 長い処理
+			// if i > 90 {
+			// 	fmt.Println("Error:", i)
+			// 	return fmt.Errorf("Error occurred: %d", i)
+			// }
+			// fmt.Println("End:", i)
+			execCWL(sampleId)
+			return nil
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		log.Fatal(err)
+	}
 }
