@@ -336,12 +336,11 @@ func main() {
 
 	json.Unmarshal(raw, &ss)
 	fmt.Println("Load end")
-	fmt.Printf("Name is [%s]\n", ss.Name)
 
 	// validate
 	checkResult := false
-	for i, s := range ss.SampleList {
-		fmt.Printf("Check index: %d, SampleId: %s\n", i, s.SampleId)
+	for _, s := range ss.SampleList {
+		//fmt.Printf("Check index: %d, SampleId: %s\n", i, s.SampleId)
 		for j, t := range s.RunList {
 			// fmt.Println(t)
 			// fmt.Printf("index: %d, RunId: %s\n", j, t.RunId)
