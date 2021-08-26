@@ -282,12 +282,14 @@ func execCWL(sampleId string) string {
 	return ""
 }
 
+var dryrunFlag bool
 var helpFlag bool
 var versionFlag bool
 var fileExistsCheckFlag bool
 var fileHashCheckFlag bool
 
 func main() {
+	flag.BoolVarP(&dryrunFlag, "dry-run", "n", false, "Dry-run, do not execute acutal command")
 	flag.BoolVarP(&helpFlag, "help", "h", false, "Show help message")
 	flag.BoolVarP(&versionFlag, "version", "v", false, "Show version")
 	flag.BoolVarP(&fileExistsCheckFlag, "file-exists-check", "", true, "Check file exists")
@@ -303,6 +305,12 @@ func main() {
 		fmt.Printf("Version: %s-%s\n", version, revision)
 		return
 	}
+
+	if dryrunFlag {
+		fmt.Println("Dry-run flag is set")
+		return
+	}
+	fmt.Println("Dry-run flag is not set")
 	//return
 
 	path, err := filepath.Abs("./")
