@@ -296,6 +296,11 @@ func execCWL(outputDirectoryPath string, sampleId string) string {
 	//
 	c1.Start()
 	c1.Wait()
+	// output exitcode
+	exitcodefile, _ := os.Create(outputDirectoryPath + "/toil-outputs/" + sampleId + "-exitcode.txt")
+	defer exitcodefile.Close()
+	exitCode := c1.ProcessState.ExitCode()
+	exitcodefile.WriteString(fmt.Sprintf("%d", exitCode))
 	//
 	stdoutwriter := bufio.NewWriter(stdoutfile)
 	defer stdoutwriter.Flush()
