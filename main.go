@@ -47,30 +47,36 @@ type simpleSchema struct {
 	SampleList []*Sample `json:"samplelist"`
 }
 
-//
+// path and format
 type PathObject struct {
 	Path   string `json:"path"`
 	Format string `json:"format"`
 }
 
+// path only
+type PathOnlyObject struct {
+	Path string `json:"path"`
+}
+
 type referenceSchema struct {
-	Name                                         string      `json:"name"`
-	Reference                                    *PathObject `json:"reference"`
-	SortsamMaxRecordsInRam                       int         `json:"sortsam_max_records_in_ram"`
-	SortsamJavaOptions                           string      `json:"sortsam_java_options"`
-	BwaNumThreads                                int         `json:"bwa_num_threads"`
-	BwaBasesPerBatch                             int         `json:"bwa_bases_per_batch"`
-	UseBqsr                                      bool        `json:"use_bqsr"`
-	Dbsnp                                        *PathObject `json:"dbsnp"`
-	Mills                                        *PathObject `json:"mills"`
-	KnownIndels                                  *PathObject `json:"known_indels"`
-	SamtoolsNumThreads                           int         `json:"samtools_num_threads"`
-	Gatk4HaplotypeCallerNumThreads               int         `json:"gatk4_HaplotypeCaller_num_threads"`
-	BgzipNumThreads                              int         `json:"bgzip_num_threads"`
-	HaplotypecallerAutosomePARPloidy2IntervalBed *PathObject `json:"haplotypecaller_autosome_PAR_ploidy_2_interval_bed"`
-	HaplotypecallerChrXNonPARPloidy2IntervalBed  *PathObject `json:"haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed"`
-	HaplotypecallerChrXNonPARPloidy1IntervalBed  *PathObject `json:"haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed"`
-	HaplotypecallerChrYNonPARPloidy1IntervalBed  *PathObject `json:"haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed"`
+	WorkflowFile                                 *PathOnlyObject `json:"workflow_file"`
+	OutputDirectory                              *PathOnlyObject `json:"output_directory"`
+	Reference                                    *PathObject     `json:"reference"`
+	SortsamMaxRecordsInRam                       int             `json:"sortsam_max_records_in_ram"`
+	SortsamJavaOptions                           string          `json:"sortsam_java_options"`
+	BwaNumThreads                                int             `json:"bwa_num_threads"`
+	BwaBasesPerBatch                             int             `json:"bwa_bases_per_batch"`
+	UseBqsr                                      bool            `json:"use_bqsr"`
+	Dbsnp                                        *PathObject     `json:"dbsnp"`
+	Mills                                        *PathObject     `json:"mills"`
+	KnownIndels                                  *PathObject     `json:"known_indels"`
+	SamtoolsNumThreads                           int             `json:"samtools_num_threads"`
+	Gatk4HaplotypeCallerNumThreads               int             `json:"gatk4_HaplotypeCaller_num_threads"`
+	BgzipNumThreads                              int             `json:"bgzip_num_threads"`
+	HaplotypecallerAutosomePARPloidy2IntervalBed *PathObject     `json:"haplotypecaller_autosome_PAR_ploidy_2_interval_bed"`
+	HaplotypecallerChrXNonPARPloidy2IntervalBed  *PathObject     `json:"haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed"`
+	HaplotypecallerChrXNonPARPloidy1IntervalBed  *PathObject     `json:"haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed"`
+	HaplotypecallerChrYNonPARPloidy1IntervalBed  *PathObject     `json:"haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed"`
 }
 
 //
@@ -96,6 +102,30 @@ func md5File(filePath string) (string, error) {
 	}
 
 	return hex.EncodeToString(hash.Sum(nil)[:16]), nil
+}
+
+func getFileNameWithoutExtension(path string) string {
+	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
+}
+
+func checkSecondaryFilesExists(fn string) (bool, error) {
+	// true is exist all files
+	// false is some secodary files missing
+	result := true
+	for _, extension := range []string{".amb", ".ann", ".bwt", ".pac", ".sa", ".alt", ".fai"} {
+		// Check file is exist
+		if _, err := os.Stat(fn + extension); os.IsNotExist(err) {
+			fmt.Printf("Missing file [%s]\n", fn+extension)
+			result = false
+		}
+	}
+	// ^.dict
+	dictfile := filepath.Join(filepath.Dir(fn), getFileNameWithoutExtension(fn)+".dict")
+	if _, err := os.Stat(dictfile); os.IsNotExist(err) {
+		fmt.Printf("Missing file [%s]\n", dictfile)
+		result = false
+	}
+	return result, nil
 }
 
 func checkRunDataFile(fn string, fnmd5 string) (bool, error) {
@@ -125,6 +155,9 @@ func checkRunDataFile(fn string, fnmd5 string) (bool, error) {
 	return result, nil
 }
 
+/**
+ * return value: true is fine, false is some thing wrong
+ */
 func checkRunData(runData *RunData) (bool, error) {
 	result := false
 	if runData.PEOrSE == "PE" {
@@ -270,15 +303,37 @@ func createJobFile(ss *simpleSchema, rss *referenceSchema) error {
 	return nil
 }
 
-func execCWL(sampleId string) string {
+func execCWL(outputDirectoryPath string, workflowFilePath string, sampleId string) string {
 	// execute toil
 	//p, _ := os.Getwd()
 	// c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
-	c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
+	c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", outputDirectoryPath+"/jobstores/"+sampleId+"-jobstore", "--outdir", outputDirectoryPath+"/"+sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", outputDirectoryPath+"/logs/"+sampleId+".log", workflowFilePath, sampleId+"_jobfile.yaml")
 	// set environment value if needed
 	//c1.Env = append(os.Environ(), "TOIL_SLURM_ARGS=\"-w node[1-9]\"")
+	//
+	stdoutfile, _ := os.Create(outputDirectoryPath + "/toil-outputs/" + sampleId + "-stdout.txt")
+	defer stdoutfile.Close()
+	c1.Stdout = stdoutfile
+	//
+	stderrfile, _ := os.Create(outputDirectoryPath + "/toil-outputs/" + sampleId + "-stderr.txt")
+	defer stderrfile.Close()
+	c1.Stderr = stderrfile
+	//
 	c1.Start()
 	c1.Wait()
+	// output exitcode
+	exitcodefile, _ := os.Create(outputDirectoryPath + "/toil-outputs/" + sampleId + "-exitcode.txt")
+	defer exitcodefile.Close()
+	exitCode := c1.ProcessState.ExitCode()
+	exitcodefile.WriteString(fmt.Sprintf("%d", exitCode))
+	//
+	stdoutwriter := bufio.NewWriter(stdoutfile)
+	defer stdoutwriter.Flush()
+	//
+	stderrwriter := bufio.NewWriter(stderrfile)
+	defer stderrwriter.Flush()
+
+	//
 	return ""
 }
 
@@ -306,11 +361,6 @@ func main() {
 		return
 	}
 
-	if dryrunFlag {
-		fmt.Println("Dry-run flag is set")
-		return
-	}
-	fmt.Println("Dry-run flag is not set")
 	//return
 
 	path, err := filepath.Abs("./")
@@ -350,14 +400,9 @@ func main() {
 	for _, s := range ss.SampleList {
 		//fmt.Printf("Check index: %d, SampleId: %s\n", i, s.SampleId)
 		for j, t := range s.RunList {
-			// fmt.Println(t)
-			// fmt.Printf("index: %d, RunId: %s\n", j, t.RunId)
-			// fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
-			// fmt.Printf("fq1: [%s]\n", t.RunData.FQ1)
-			// fmt.Printf("fq2: [%s]\n", t.RunData.FQ2)
 			r1, _ := checkRunData(&t.RunData)
 			checkResult = checkResult || r1
-			if r1 {
+			if !r1 {
 				fmt.Println("Some error found. Not exist or Hash value error")
 				fmt.Printf("Check index: %d, RunId: %s\n", j, t.RunId)
 				fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
@@ -367,7 +412,9 @@ func main() {
 			}
 		}
 	}
-	if checkResult {
+	if !checkResult {
+		fmt.Println("some thing wrong. do not execute")
+		return
 	}
 	// reference config validate
 
@@ -402,6 +449,75 @@ func main() {
 	json.Unmarshal(rraw, &rss)
 	fmt.Println("Load end")
 
+	if dryrunFlag {
+		fmt.Println("Dry-run flag is set")
+		return
+	}
+	//
+	secondaryFilesCheck, err := checkSecondaryFilesExists(rss.Reference.Path)
+	if !secondaryFilesCheck {
+		fmt.Println("Some secondary file is missing")
+		return
+	}
+
+	// Set output directory path
+	workflowFilePath := rss.WorkflowFile.Path
+
+	// Set output directory path
+	outputDirectoryPath := rss.OutputDirectory.Path
+	// Create output directory
+	// if not create , show error message and exit
+	if err := os.MkdirAll(outputDirectoryPath, 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create output directory")
+		return
+	}
+	if err := os.MkdirAll(outputDirectoryPath+"/toil-outputs", 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create toil outputs directory")
+		return
+	}
+	if err := os.MkdirAll(outputDirectoryPath+"/logs", 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create logs directory")
+		return
+	}
+	if err := os.MkdirAll(outputDirectoryPath+"/jobstores", 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create jobstores directory")
+		return
+	}
+	// copy sample_sheet file
+	original_sample_sheet, err := os.Open(os.Args[2])
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer original_sample_sheet.Close()
+	copied_sample_sheet, err := os.Create(outputDirectoryPath + "/" + original_sample_sheet.Name())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer copied_sample_sheet.Close()
+	_, err = io.Copy(copied_sample_sheet, original_sample_sheet)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// copy config file
+	original_configfile, err := os.Open(os.Args[4])
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer original_configfile.Close()
+	copied_configfile, err := os.Create(outputDirectoryPath + "/" + original_configfile.Name())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer copied_configfile.Close()
+	_, err = io.Copy(copied_configfile, original_configfile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// create job file for CWL
 	createJobFile(&ss, &rss)
 
@@ -411,13 +527,8 @@ func main() {
 		fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
 		sampleId := s.SampleId
 		eg.Go(func() error {
-			// time.Sleep(2 * time.Second) // 長い処理
-			// if i > 90 {
-			// 	fmt.Println("Error:", i)
-			// 	return fmt.Errorf("Error occurred: %d", i)
-			// }
-			// fmt.Println("End:", i)
-			execCWL(sampleId)
+			// TODO check exit status
+			execCWL(outputDirectoryPath, workflowFilePath, sampleId)
 			return nil
 		})
 	}
@@ -425,4 +536,5 @@ func main() {
 	if err := eg.Wait(); err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("job fin")
 }
