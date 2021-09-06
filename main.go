@@ -47,29 +47,35 @@ type simpleSchema struct {
 	SampleList []*Sample `json:"samplelist"`
 }
 
-//
+// path and format
 type PathObject struct {
 	Path   string `json:"path"`
 	Format string `json:"format"`
 }
 
+// path only
+type PathOnlyObject struct {
+	Path string `json:"path"`
+}
+
 type referenceSchema struct {
-	Reference                                    *PathObject `json:"reference"`
-	SortsamMaxRecordsInRam                       int         `json:"sortsam_max_records_in_ram"`
-	SortsamJavaOptions                           string      `json:"sortsam_java_options"`
-	BwaNumThreads                                int         `json:"bwa_num_threads"`
-	BwaBasesPerBatch                             int         `json:"bwa_bases_per_batch"`
-	UseBqsr                                      bool        `json:"use_bqsr"`
-	Dbsnp                                        *PathObject `json:"dbsnp"`
-	Mills                                        *PathObject `json:"mills"`
-	KnownIndels                                  *PathObject `json:"known_indels"`
-	SamtoolsNumThreads                           int         `json:"samtools_num_threads"`
-	Gatk4HaplotypeCallerNumThreads               int         `json:"gatk4_HaplotypeCaller_num_threads"`
-	BgzipNumThreads                              int         `json:"bgzip_num_threads"`
-	HaplotypecallerAutosomePARPloidy2IntervalBed *PathObject `json:"haplotypecaller_autosome_PAR_ploidy_2_interval_bed"`
-	HaplotypecallerChrXNonPARPloidy2IntervalBed  *PathObject `json:"haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed"`
-	HaplotypecallerChrXNonPARPloidy1IntervalBed  *PathObject `json:"haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed"`
-	HaplotypecallerChrYNonPARPloidy1IntervalBed  *PathObject `json:"haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed"`
+	OutputDirectory                              *PathOnlyObject `json:"output_directory"`
+	Reference                                    *PathObject     `json:"reference"`
+	SortsamMaxRecordsInRam                       int             `json:"sortsam_max_records_in_ram"`
+	SortsamJavaOptions                           string          `json:"sortsam_java_options"`
+	BwaNumThreads                                int             `json:"bwa_num_threads"`
+	BwaBasesPerBatch                             int             `json:"bwa_bases_per_batch"`
+	UseBqsr                                      bool            `json:"use_bqsr"`
+	Dbsnp                                        *PathObject     `json:"dbsnp"`
+	Mills                                        *PathObject     `json:"mills"`
+	KnownIndels                                  *PathObject     `json:"known_indels"`
+	SamtoolsNumThreads                           int             `json:"samtools_num_threads"`
+	Gatk4HaplotypeCallerNumThreads               int             `json:"gatk4_HaplotypeCaller_num_threads"`
+	BgzipNumThreads                              int             `json:"bgzip_num_threads"`
+	HaplotypecallerAutosomePARPloidy2IntervalBed *PathObject     `json:"haplotypecaller_autosome_PAR_ploidy_2_interval_bed"`
+	HaplotypecallerChrXNonPARPloidy2IntervalBed  *PathObject     `json:"haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed"`
+	HaplotypecallerChrXNonPARPloidy1IntervalBed  *PathObject     `json:"haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed"`
+	HaplotypecallerChrYNonPARPloidy1IntervalBed  *PathObject     `json:"haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed"`
 }
 
 //
@@ -124,6 +130,9 @@ func checkRunDataFile(fn string, fnmd5 string) (bool, error) {
 	return result, nil
 }
 
+/**
+ * return value: true is fine, false is some thing wrong
+ */
 func checkRunData(runData *RunData) (bool, error) {
 	result := false
 	if runData.PEOrSE == "PE" {
@@ -269,11 +278,11 @@ func createJobFile(ss *simpleSchema, rss *referenceSchema) error {
 	return nil
 }
 
-func execCWL(sampleId string) string {
+func execCWL(outputDirectoryPath string, sampleId string) string {
 	// execute toil
 	//p, _ := os.Getwd()
 	// c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
-	c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
+	c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", "outputDirectoryPath"+"/jobstores/"+sampleId+"-jobstore", "--outdir", "outputDirectoryPath"+"/"+sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", "outputDirectoryPath"+"/logs/"+sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
 	// set environment value if needed
 	//c1.Env = append(os.Environ(), "TOIL_SLURM_ARGS=\"-w node[1-9]\"")
 	c1.Start()
@@ -305,11 +314,6 @@ func main() {
 		return
 	}
 
-	if dryrunFlag {
-		fmt.Println("Dry-run flag is set")
-		return
-	}
-	fmt.Println("Dry-run flag is not set")
 	//return
 
 	path, err := filepath.Abs("./")
@@ -401,6 +405,20 @@ func main() {
 	json.Unmarshal(rraw, &rss)
 	fmt.Println("Load end")
 
+	if dryrunFlag {
+		fmt.Println("Dry-run flag is set")
+		return
+	}
+
+	// Set output directory path
+	outputDirectoryPath := rss.OutputDirectory.Path
+	// Create output directory
+	// if not create , show error message and exit
+	if err := os.MkdirAll(outputDirectoryPath, 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create output directory")
+		return
+	}
 	// create job file for CWL
 	createJobFile(&ss, &rss)
 
@@ -416,7 +434,7 @@ func main() {
 			// 	return fmt.Errorf("Error occurred: %d", i)
 			// }
 			// fmt.Println("End:", i)
-			execCWL(sampleId)
+			execCWL(outputDirectoryPath, sampleId)
 			return nil
 		})
 	}

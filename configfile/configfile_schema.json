@@ -2,6 +2,18 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
+      "output_directory": {
+        "$id": "#output_directory",
+        "description": "Output top directory path, all sample id directory creates under this directory",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "Output top directory path",
+            "type": "string"
+          }
+        },
+        "required": [ "path" ]
+      },
       "reference":{
         "$id": "#reference",
         "description": "Reference",
@@ -165,6 +177,7 @@
   },
 
   "required": [
+      "output_directory",
       "reference",
       "sortsam_max_records_in_ram",
       "sortsam_java_options",
