@@ -2,6 +2,18 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
+      "workflow_file": {
+        "$id": "#workflow_file",
+        "description": "CWL Workflow File",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "CWL Workflow file path",
+            "type": "string"
+          }
+        },
+        "required": [ "path" ]
+      },
       "output_directory": {
         "$id": "#output_directory",
         "description": "Output top directory path, all sample id directory creates under this directory",
@@ -177,6 +189,7 @@
   },
 
   "required": [
+      "workflow_file",
       "output_directory",
       "reference",
       "sortsam_max_records_in_ram",
