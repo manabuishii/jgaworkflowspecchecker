@@ -1,30 +1,37 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/xeipuuv/gojsonschema"
+	"golang.org/x/sync/errgroup"
+
+	// for CLI
+	flag "github.com/spf13/pflag"
 )
 
 type RunData struct {
-	PE_1     string `json:"PE_1"`
-	PE_1_MD5 string `json:"PE_1_MD5"`
-	PE_2     string `json:"PE_2"`
-	PE_2_MD5 string `json:"PE_2_MD5"`
-	SE_1     string `json:"SE_1"`
-	SE_1_MD5 string `json:"SE_1_MD5"`
+	PEOrSE  string `json:"se_or_pe"`
+	FQ1     string `json:"fq1"`
+	FQ1_MD5 string `json:"fq1_MD5"`
+	FQ2     string `json:"fq2"`
+	FQ2_MD5 string `json:"fq2_MD5"`
 }
 
 type Run struct {
-	RunId   string `json:"runid"`
-	PEOrSE  string `json:"PE_or_SE"`
+	RunId string `json:"runid"`
+
 	RunData `json:"data"`
 }
 
@@ -35,9 +42,8 @@ type Sample struct {
 }
 
 type simpleSchema struct {
-	Name       string    `json:"name"`
-	Md5        string    `json:"md5,omitempty"`
-	Fq1        string    `json:"fq1"`
+	Name string `json:"name"`
+
 	SampleList []*Sample `json:"samplelist"`
 }
 
@@ -48,20 +54,30 @@ type PathObject struct {
 }
 
 type referenceSchema struct {
-	Name                           string      `json:"name"`
-	Reference                      *PathObject `json:"reference"`
-	SortsamMaxRecordsInRam         int         `json:"sortsam_max_records_in_ram"`
-	SortsamJavaOptions             string      `json:"sortsam_java_options"`
-	BwaNumThreads                  int         `json:"bwa_num_threads"`
-	BwaBasesPerBatch               int         `json:"bwa_bases_per_batch"`
-	UseBqsr                        bool        `json:"use_bqsr"`
-	Dbsnp                          *PathObject `json:"dbsnp"`
-	Mills                          *PathObject `json:"mills"`
-	KnownIndels                    *PathObject `json:"known_indels"`
-	SamtoolsNumThreads             int         `json:"samtools_num_threads"`
-	Gatk4HaplotypeCallerNumThreads int         `json:"gatk4_HaplotypeCaller_num_threads"`
-	BgzipNumThreads                int         `json:"bgzip_num_threads"`
+	Name                                         string      `json:"name"`
+	Reference                                    *PathObject `json:"reference"`
+	SortsamMaxRecordsInRam                       int         `json:"sortsam_max_records_in_ram"`
+	SortsamJavaOptions                           string      `json:"sortsam_java_options"`
+	BwaNumThreads                                int         `json:"bwa_num_threads"`
+	BwaBasesPerBatch                             int         `json:"bwa_bases_per_batch"`
+	UseBqsr                                      bool        `json:"use_bqsr"`
+	Dbsnp                                        *PathObject `json:"dbsnp"`
+	Mills                                        *PathObject `json:"mills"`
+	KnownIndels                                  *PathObject `json:"known_indels"`
+	SamtoolsNumThreads                           int         `json:"samtools_num_threads"`
+	Gatk4HaplotypeCallerNumThreads               int         `json:"gatk4_HaplotypeCaller_num_threads"`
+	BgzipNumThreads                              int         `json:"bgzip_num_threads"`
+	HaplotypecallerAutosomePARPloidy2IntervalBed *PathObject `json:"haplotypecaller_autosome_PAR_ploidy_2_interval_bed"`
+	HaplotypecallerChrXNonPARPloidy2IntervalBed  *PathObject `json:"haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed"`
+	HaplotypecallerChrXNonPARPloidy1IntervalBed  *PathObject `json:"haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed"`
+	HaplotypecallerChrYNonPARPloidy1IntervalBed  *PathObject `json:"haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed"`
 }
+
+//
+var version string
+var revision string
+
+//
 
 func md5File(filePath string) (string, error) {
 	file, err := os.Open(filePath)
@@ -83,9 +99,17 @@ func md5File(filePath string) (string, error) {
 }
 
 func checkRunDataFile(fn string, fnmd5 string) (bool, error) {
+	// Check file existance flag is set
+	if fileExistsCheckFlag == false {
+		return true, nil
+	}
 	// Check file is exist
 	if _, err := os.Stat(fn); os.IsNotExist(err) {
 		return false, err
+	}
+	// Check file hash
+	if fileHashCheckFlag == false {
+		return true, nil
 	}
 	// Check file hash value if specified
 	result := true
@@ -103,17 +127,191 @@ func checkRunDataFile(fn string, fnmd5 string) (bool, error) {
 
 func checkRunData(runData *RunData) (bool, error) {
 	result := false
-	if runData.SE_1 == "" {
-		r1, _ := checkRunDataFile(runData.PE_1, runData.PE_1_MD5)
-		r2, _ := checkRunDataFile(runData.PE_2, runData.PE_2_MD5)
+	if runData.PEOrSE == "PE" {
+		r1, _ := checkRunDataFile(runData.FQ1, runData.FQ1_MD5)
+		r2, _ := checkRunDataFile(runData.FQ2, runData.FQ2_MD5)
 		result = r1 && r2
 	} else {
-		result, _ = checkRunDataFile(runData.SE_1, runData.SE_1_MD5)
+		result, _ = checkRunDataFile(runData.FQ1, runData.FQ1_MD5)
 	}
 	return result, nil
 }
 
+func outputReference(rss *referenceSchema) (string, error) {
+	var byteBuf bytes.Buffer
+	byteBuf.WriteString("")
+	byteBuf.WriteString("reference:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.Reference.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_1929\n")
+	byteBuf.WriteString(fmt.Sprintf("sortsam_max_records_in_ram: %d\n", rss.SortsamMaxRecordsInRam))
+	byteBuf.WriteString(fmt.Sprintf("sortsam_java_options: %s\n", rss.SortsamJavaOptions))
+	byteBuf.WriteString(fmt.Sprintf("bwa_num_threads: %d\n", rss.BwaNumThreads))
+	byteBuf.WriteString(fmt.Sprintf("bwa_bases_per_batch: %d\n", rss.BwaBasesPerBatch))
+	byteBuf.WriteString(fmt.Sprintf("use_bqsr: %t\n", rss.UseBqsr))
+	byteBuf.WriteString("dbsnp:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.Dbsnp.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3016\n")
+	byteBuf.WriteString("mills:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.Mills.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3016\n")
+	byteBuf.WriteString("known_indels:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.KnownIndels.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3016\n")
+	byteBuf.WriteString(fmt.Sprintf("samtools_num_threads: %d\n", rss.SamtoolsNumThreads))
+	byteBuf.WriteString(fmt.Sprintf("gatk4_HaplotypeCaller_num_threads: %d\n", rss.Gatk4HaplotypeCallerNumThreads))
+	byteBuf.WriteString(fmt.Sprintf("bgzip_num_threads: %d\n", rss.BgzipNumThreads))
+	byteBuf.WriteString("haplotypecaller_autosome_PAR_ploidy_2_interval_bed:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerAutosomePARPloidy2IntervalBed.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3584\n")
+	byteBuf.WriteString("haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerChrXNonPARPloidy2IntervalBed.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3584\n")
+	byteBuf.WriteString("haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerChrXNonPARPloidy1IntervalBed.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3584\n")
+	byteBuf.WriteString("haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerChrYNonPARPloidy1IntervalBed.Path))
+	byteBuf.WriteString("  format: http://edamontology.org/format_3584\n")
+
+	return byteBuf.String(), nil
+}
+
+// call per sample
+func outputJobFile(s *Sample, rss *referenceSchema) (string, error) {
+	//
+	var byteBuf bytes.Buffer
+
+	// count SE and PE entry
+	numOfSE := 0
+	numOfPE := 0
+	for _, t := range s.RunList {
+		if t.RunData.PEOrSE == "SE" {
+			numOfSE = numOfSE + 1
+		}
+		if t.RunData.PEOrSE == "PE" {
+			numOfPE = numOfPE + 1
+		}
+	}
+	//
+	byteBuf.WriteString(fmt.Sprintf("sample_id: %s\n", s.SampleId))
+	if numOfPE == 0 {
+		byteBuf.WriteString("runlist_pe: []\n")
+	} else {
+		byteBuf.WriteString("runlist_pe:\n")
+		for _, t := range s.RunList {
+			if t.RunData.PEOrSE != "PE" {
+				continue
+			}
+			byteBuf.WriteString(fmt.Sprintf("  - run_id: %s\n", t.RunId))
+			byteBuf.WriteString("    platform_name: ILLUMINA\n")
+			byteBuf.WriteString("    fastq1:\n")
+			byteBuf.WriteString("      class: File\n")
+			byteBuf.WriteString(fmt.Sprintf("      path: %s\n", t.RunData.FQ1))
+			byteBuf.WriteString("      format: http://edamontology.org/format_1930\n")
+			byteBuf.WriteString("    fastq2:\n")
+			byteBuf.WriteString("      class: File\n")
+			byteBuf.WriteString(fmt.Sprintf("      path: %s\n", t.RunData.FQ2))
+			byteBuf.WriteString("      format: http://edamontology.org/format_1930\n")
+		}
+	}
+	if numOfSE == 0 {
+		byteBuf.WriteString("runlist_se: []\n")
+	} else {
+		byteBuf.WriteString("runlist_se:\n")
+		for _, t := range s.RunList {
+			if t.RunData.PEOrSE != "SE" {
+				continue
+			}
+			byteBuf.WriteString(fmt.Sprintf("  - run_id: %s\n", t.RunId))
+			byteBuf.WriteString("    platform_name: ILLUMINA\n")
+			byteBuf.WriteString("    fastq1:\n")
+			byteBuf.WriteString("      class: File\n")
+			byteBuf.WriteString(fmt.Sprintf("      path: %s\n", t.RunData.FQ1))
+			byteBuf.WriteString("      format: http://edamontology.org/format_1930\n")
+		}
+	}
+
+	return byteBuf.String(), nil
+}
+
+func createJobFile(ss *simpleSchema, rss *referenceSchema) error {
+	for _, s := range ss.SampleList {
+		// create file
+		//
+		filename := fmt.Sprintf("%s_jobfile.yaml", s.SampleId)
+		file, err := os.Create(filename)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		writer := bufio.NewWriter(file)
+		// output reference data to job file per each sampleID
+		referenceData, _ := outputReference(rss)
+		if _, err := writer.WriteString(referenceData); err != nil {
+			return err
+		}
+		sampleData, _ := outputJobFile(s, rss)
+		if _, err := writer.WriteString(sampleData); err != nil {
+			return err
+		}
+
+		// Flush
+		writer.Flush()
+
+	}
+	return nil
+}
+
+func execCWL(sampleId string) string {
+	// execute toil
+	//p, _ := os.Getwd()
+	// c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
+	c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
+	// set environment value if needed
+	//c1.Env = append(os.Environ(), "TOIL_SLURM_ARGS=\"-w node[1-9]\"")
+	c1.Start()
+	c1.Wait()
+	return ""
+}
+
+var dryrunFlag bool
+var helpFlag bool
+var versionFlag bool
+var fileExistsCheckFlag bool
+var fileHashCheckFlag bool
+
 func main() {
+	flag.BoolVarP(&dryrunFlag, "dry-run", "n", false, "Dry-run, do not execute acutal command")
+	flag.BoolVarP(&helpFlag, "help", "h", false, "Show help message")
+	flag.BoolVarP(&versionFlag, "version", "v", false, "Show version")
+	flag.BoolVarP(&fileExistsCheckFlag, "file-exists-check", "", true, "Check file exists")
+	flag.BoolVarP(&fileHashCheckFlag, "file-hash-check", "", true, "Check file hash value")
+	flag.Parse()
+
+	if helpFlag {
+		fmt.Printf("Version: %s-%s\n", version, revision)
+		flag.PrintDefaults()
+		return
+	}
+	if versionFlag {
+		fmt.Printf("Version: %s-%s\n", version, revision)
+		return
+	}
+
+	if dryrunFlag {
+		fmt.Println("Dry-run flag is set")
+		return
+	}
+	fmt.Println("Dry-run flag is not set")
+	//return
 
 	path, err := filepath.Abs("./")
 
@@ -146,19 +344,30 @@ func main() {
 
 	json.Unmarshal(raw, &ss)
 	fmt.Println("Load end")
-	fmt.Printf("Name is [%s]\n", ss.Name)
-	fmt.Printf("Fq1 is [%s]\n", ss.Fq1)
-	fmt.Printf("Md5 is [%s]\n", ss.Md5)
 
 	// validate
-	for i, s := range ss.SampleList {
-		fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
+	checkResult := false
+	for _, s := range ss.SampleList {
+		//fmt.Printf("Check index: %d, SampleId: %s\n", i, s.SampleId)
 		for j, t := range s.RunList {
-			fmt.Printf("index: %d, SampleId: %s\n", j, t.RunId)
+			// fmt.Println(t)
+			// fmt.Printf("index: %d, RunId: %s\n", j, t.RunId)
+			// fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
+			// fmt.Printf("fq1: [%s]\n", t.RunData.FQ1)
+			// fmt.Printf("fq2: [%s]\n", t.RunData.FQ2)
 			r1, _ := checkRunData(&t.RunData)
-			fmt.Printf("result=%t\n", r1)
-
+			checkResult = checkResult || r1
+			if r1 {
+				fmt.Println("Some error found. Not exist or Hash value error")
+				fmt.Printf("Check index: %d, RunId: %s\n", j, t.RunId)
+				fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
+				fmt.Printf("fq1: [%s]\n", t.RunData.FQ1)
+				fmt.Printf("fq2: [%s]\n", t.RunData.FQ2)
+				fmt.Printf("result=%t\n", r1)
+			}
 		}
+	}
+	if checkResult {
 	}
 	// reference config validate
 
@@ -179,6 +388,7 @@ func main() {
 		for _, desc := range rresult.Errors() {
 			fmt.Printf("- %s\n", desc)
 		}
+		return
 	}
 	fmt.Println("Load sample")
 	rraw, err := ioutil.ReadFile(os.Args[4])
@@ -191,42 +401,28 @@ func main() {
 
 	json.Unmarshal(rraw, &rss)
 	fmt.Println("Load end")
-	fmt.Println("")
-	fmt.Printf("reference:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.Reference.Path)
-	fmt.Printf("  format: http://edamontology.org/format_1929\n")
-	fmt.Printf("sortsam_max_records_in_ram: %d\n", rss.SortsamMaxRecordsInRam)
-	fmt.Printf("sortsam_java_options: %s\n", rss.SortsamJavaOptions)
-	fmt.Printf("bwa_num_threads: %d\n", rss.BwaNumThreads)
-	fmt.Printf("bwa_bases_per_batch: %d\n", rss.BwaBasesPerBatch)
-	fmt.Printf("use_bqsr: %t\n", rss.UseBqsr)
-	fmt.Printf("dbsnp:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.Dbsnp.Path)
-	fmt.Printf("  format: http://edamontology.org/format_3016\n")
-	fmt.Printf("mills:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.Mills.Path)
-	fmt.Printf("  format: http://edamontology.org/format_3016\n")
-	fmt.Printf("known_indels:\n")
-	fmt.Printf("  class: File\n")
-	fmt.Printf("  path: %s\n", rss.KnownIndels.Path)
-	fmt.Printf("  format: http://edamontology.org/format_3016\n")
-	fmt.Printf("samtools_num_threads: %d\n", rss.SamtoolsNumThreads)
-	fmt.Printf("gatk4_HaplotypeCaller_num_threads: %d\n", rss.Gatk4HaplotypeCallerNumThreads)
-	fmt.Printf("bgzip_num_threads: %d\n", rss.BgzipNumThreads)
 
-	// fmt.Printf("Md5 is [%s]\n", ss.Md5)
+	// create job file for CWL
+	createJobFile(&ss, &rss)
 
-	// // validate
-	// for i, s := range ss.SampleList {
-	// 	fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
-	// 	for j, t := range s.RunList {
-	// 		fmt.Printf("index: %d, SampleId: %s\n", j, t.RunId)
-	// 		r1, _ := checkRunData(&t.RunData)
-	// 		fmt.Printf("result=%t\n", r1)
+	// exec and wait
+	var eg errgroup.Group
+	for i, s := range ss.SampleList {
+		fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
+		sampleId := s.SampleId
+		eg.Go(func() error {
+			// time.Sleep(2 * time.Second) // 長い処理
+			// if i > 90 {
+			// 	fmt.Println("Error:", i)
+			// 	return fmt.Errorf("Error occurred: %d", i)
+			// }
+			// fmt.Println("End:", i)
+			execCWL(sampleId)
+			return nil
+		})
+	}
 
-	// 	}
-	// }
+	if err := eg.Wait(); err != nil {
+		log.Fatal(err)
+	}
 }
