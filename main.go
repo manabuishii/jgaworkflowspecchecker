@@ -376,11 +376,6 @@ func main() {
 	for _, s := range ss.SampleList {
 		//fmt.Printf("Check index: %d, SampleId: %s\n", i, s.SampleId)
 		for j, t := range s.RunList {
-			// fmt.Println(t)
-			// fmt.Printf("index: %d, RunId: %s\n", j, t.RunId)
-			// fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
-			// fmt.Printf("fq1: [%s]\n", t.RunData.FQ1)
-			// fmt.Printf("fq2: [%s]\n", t.RunData.FQ2)
 			r1, _ := checkRunData(&t.RunData)
 			checkResult = checkResult || r1
 			if !r1 {
