@@ -458,6 +458,37 @@ func main() {
 		fmt.Println("cannot create jobstores directory")
 		return
 	}
+	// copy sample_sheet file
+	original_sample_sheet, err := os.Open(os.Args[2])
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer original_sample_sheet.Close()
+	copied_sample_sheet, err := os.Create(outputDirectoryPath + "/" + original_sample_sheet.Name())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer copied_sample_sheet.Close()
+	_, err = io.Copy(copied_sample_sheet, original_sample_sheet)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// copy config file
+	original_configfile, err := os.Open(os.Args[4])
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer original_configfile.Close()
+	copied_configfile, err := os.Create(outputDirectoryPath + "/" + original_configfile.Name())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer copied_configfile.Close()
+	_, err = io.Copy(copied_configfile, original_configfile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// create job file for CWL
 	createJobFile(&ss, &rss)
 
