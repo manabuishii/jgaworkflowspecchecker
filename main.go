@@ -59,6 +59,7 @@ type PathOnlyObject struct {
 }
 
 type referenceSchema struct {
+	WorkflowFile                                 *PathOnlyObject `json:"workflow_file"`
 	OutputDirectory                              *PathOnlyObject `json:"output_directory"`
 	Reference                                    *PathObject     `json:"reference"`
 	SortsamMaxRecordsInRam                       int             `json:"sortsam_max_records_in_ram"`
@@ -278,11 +279,11 @@ func createJobFile(ss *simpleSchema, rss *referenceSchema) error {
 	return nil
 }
 
-func execCWL(outputDirectoryPath string, sampleId string) string {
+func execCWL(outputDirectoryPath string, workflowFilePath string, sampleId string) string {
 	// execute toil
 	//p, _ := os.Getwd()
 	// c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
-	c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", outputDirectoryPath+"/jobstores/"+sampleId+"-jobstore", "--outdir", outputDirectoryPath+"/"+sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", outputDirectoryPath+"/logs/"+sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
+	c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", outputDirectoryPath+"/jobstores/"+sampleId+"-jobstore", "--outdir", outputDirectoryPath+"/"+sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", outputDirectoryPath+"/logs/"+sampleId+".log", workflowFilePath, sampleId+"_jobfile.yaml")
 	// set environment value if needed
 	//c1.Env = append(os.Environ(), "TOIL_SLURM_ARGS=\"-w node[1-9]\"")
 	//
@@ -433,6 +434,8 @@ func main() {
 		fmt.Println("Dry-run flag is set")
 		return
 	}
+	// Set output directory path
+	workflowFilePath := rss.WorkflowFile.Path
 
 	// Set output directory path
 	outputDirectoryPath := rss.OutputDirectory.Path
@@ -498,13 +501,8 @@ func main() {
 		fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
 		sampleId := s.SampleId
 		eg.Go(func() error {
-			// time.Sleep(2 * time.Second) // 長い処理
-			// if i > 90 {
-			// 	fmt.Println("Error:", i)
-			// 	return fmt.Errorf("Error occurred: %d", i)
-			// }
-			// fmt.Println("End:", i)
-			execCWL(outputDirectoryPath, sampleId)
+			// TODO check exit status
+			execCWL(outputDirectoryPath, workflowFilePath, sampleId)
 			return nil
 		})
 	}
