@@ -54,7 +54,6 @@ type PathObject struct {
 }
 
 type referenceSchema struct {
-	Name                                         string      `json:"name"`
 	Reference                                    *PathObject `json:"reference"`
 	SortsamMaxRecordsInRam                       int         `json:"sortsam_max_records_in_ram"`
 	SortsamJavaOptions                           string      `json:"sortsam_java_options"`
