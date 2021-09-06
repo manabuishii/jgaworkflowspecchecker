@@ -377,7 +377,7 @@ func main() {
 			// fmt.Printf("fq2: [%s]\n", t.RunData.FQ2)
 			r1, _ := checkRunData(&t.RunData)
 			checkResult = checkResult || r1
-			if r1 {
+			if !r1 {
 				fmt.Println("Some error found. Not exist or Hash value error")
 				fmt.Printf("Check index: %d, RunId: %s\n", j, t.RunId)
 				fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
@@ -387,7 +387,9 @@ func main() {
 			}
 		}
 	}
-	if checkResult {
+	if !checkResult {
+		fmt.Println("some thing wrong. do not execute")
+		return
 	}
 	// reference config validate
 
@@ -474,4 +476,5 @@ func main() {
 	if err := eg.Wait(); err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("job fin")
 }
