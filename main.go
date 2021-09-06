@@ -104,6 +104,30 @@ func md5File(filePath string) (string, error) {
 	return hex.EncodeToString(hash.Sum(nil)[:16]), nil
 }
 
+func getFileNameWithoutExtension(path string) string {
+	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
+}
+
+func checkSecondaryFilesExists(fn string) (bool, error) {
+	// true is exist all files
+	// false is some secodary files missing
+	result := true
+	for _, extension := range []string{".amb", ".ann", ".bwt", ".pac", ".sa", ".alt", ".fai"} {
+		// Check file is exist
+		if _, err := os.Stat(fn + extension); os.IsNotExist(err) {
+			fmt.Printf("Missing file [%s]\n", fn+extension)
+			result = false
+		}
+	}
+	// ^.dict
+	dictfile := filepath.Join(filepath.Dir(fn), getFileNameWithoutExtension(fn)+".dict")
+	if _, err := os.Stat(dictfile); os.IsNotExist(err) {
+		fmt.Printf("Missing file [%s]\n", dictfile)
+		result = false
+	}
+	return result, nil
+}
+
 func checkRunDataFile(fn string, fnmd5 string) (bool, error) {
 	// Check file existance flag is set
 	if fileExistsCheckFlag == false {
@@ -429,6 +453,13 @@ func main() {
 		fmt.Println("Dry-run flag is set")
 		return
 	}
+	//
+	secondaryFilesCheck, err := checkSecondaryFilesExists(rss.Reference.Path)
+	if !secondaryFilesCheck {
+		fmt.Println("Some secondary file is missing")
+		return
+	}
+
 	// Set output directory path
 	workflowFilePath := rss.WorkflowFile.Path
 
