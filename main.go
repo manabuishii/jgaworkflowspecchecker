@@ -104,6 +104,70 @@ func md5File(filePath string) (string, error) {
 	return hex.EncodeToString(hash.Sum(nil)[:16]), nil
 }
 
+func isExistsAllResultFilesPrefixRunId(outputDirectoryPath string, runId string) bool {
+	result := true
+	fn := filepath.Join(outputDirectoryPath, runId)
+	for _, extension := range []string{".bam", ".bam.log"} {
+		if _, err := os.Stat(fn + extension); os.IsNotExist(err) {
+			fmt.Printf("Missing file [%s]\n", fn+extension)
+			result = false
+		}
+
+	}
+	return result
+}
+func isExistsAllResultFilesPrefixSampleId(outputDirectoryPath string, sampleId string) bool {
+	result := true
+	fn := filepath.Join(outputDirectoryPath, sampleId)
+	for _, extension := range []string{".autosome_PAR_ploidy_2.g.vcf.gz",
+		".autosome_PAR_ploidy_2.g.vcf.gz.bcftools-stats",
+		".autosome_PAR_ploidy_2.g.vcf.gz.bcftools-stats.log",
+		".autosome_PAR_ploidy_2.g.vcf.gz.log",
+		".autosome_PAR_ploidy_2.g.vcf.gz.tbi",
+		".autosome_PAR_ploidy_2.g.vcf.gz.tbi.log",
+		".autosome_PAR_ploidy_2.g.vcf.log",
+		".bam.log",
+		".chrX_nonPAR_ploidy_1.g.vcf.gz",
+		".chrX_nonPAR_ploidy_1.g.vcf.gz.bcftools-stats",
+		".chrX_nonPAR_ploidy_1.g.vcf.gz.bcftools-stats.log",
+		".chrX_nonPAR_ploidy_1.g.vcf.gz.log",
+		".chrX_nonPAR_ploidy_1.g.vcf.gz.tbi",
+		".chrX_nonPAR_ploidy_1.g.vcf.gz.tbi.log",
+		".chrX_nonPAR_ploidy_1.g.vcf.log",
+		".chrX_nonPAR_ploidy_2.g.vcf.gz",
+		".chrX_nonPAR_ploidy_2.g.vcf.gz.bcftools-stats",
+		".chrX_nonPAR_ploidy_2.g.vcf.gz.bcftools-stats.log",
+		".chrX_nonPAR_ploidy_2.g.vcf.gz.log",
+		".chrX_nonPAR_ploidy_2.g.vcf.gz.tbi",
+		".chrX_nonPAR_ploidy_2.g.vcf.gz.tbi.log",
+		".chrX_nonPAR_ploidy_2.g.vcf.log",
+		".chrY_nonPAR_ploidy_1.g.vcf.gz",
+		".chrY_nonPAR_ploidy_1.g.vcf.gz.bcftools-stats",
+		".chrY_nonPAR_ploidy_1.g.vcf.gz.bcftools-stats.log",
+		".chrY_nonPAR_ploidy_1.g.vcf.gz.log",
+		".chrY_nonPAR_ploidy_1.g.vcf.gz.tbi",
+		".chrY_nonPAR_ploidy_1.g.vcf.gz.tbi.log",
+		".chrY_nonPAR_ploidy_1.g.vcf.log",
+		".cram",
+		".cram.collect_base_dist_by_cycle",
+		".cram.collect_base_dist_by_cycle.chart.pdf",
+		".cram.collect_base_dist_by_cycle.chart.png",
+		".cram.crai",
+		".cram.crai.log",
+		".cram.flagstat",
+		".cram.idxstats",
+		".cram.log",
+		".log",
+		".metrics.txt"} {
+		if _, err := os.Stat(fn + "/" + sampleId + extension); os.IsNotExist(err) {
+			fmt.Printf("Missing file [%s]\n", fn+extension)
+			result = false
+		}
+
+	}
+	return result
+}
+
 func getFileNameWithoutExtension(path string) string {
 	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
 }
@@ -449,10 +513,10 @@ func main() {
 	json.Unmarshal(rraw, &rss)
 	fmt.Println("Load end")
 
-	if dryrunFlag {
-		fmt.Println("Dry-run flag is set")
-		return
-	}
+	// if dryrunFlag {
+	// 	fmt.Println("Dry-run flag is set")
+	// 	return
+	// }
 	//
 	secondaryFilesCheck, err := checkSecondaryFilesExists(rss.Reference.Path)
 	if !secondaryFilesCheck {
@@ -521,20 +585,62 @@ func main() {
 	// create job file for CWL
 	createJobFile(&ss, &rss)
 
+	// dry-run
+
 	// exec and wait
 	var eg errgroup.Group
+	executeCount := 0
 	for i, s := range ss.SampleList {
-		fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
-		sampleId := s.SampleId
-		eg.Go(func() error {
-			// TODO check exit status
-			execCWL(outputDirectoryPath, workflowFilePath, sampleId)
-			return nil
-		})
+		isExecute := false
+		// Check SampleId result directory is exist
+		if _, err := os.Stat(outputDirectoryPath + "/" + s.SampleId); os.IsNotExist(err) {
+			// SampleId result directory is missing
+			// so this id must be executed
+			isExecute = true
+		} else {
+			// check all result file is found or not
+			// SampleId prefix files check
+			check1 := isExistsAllResultFilesPrefixSampleId(outputDirectoryPath, s.SampleId)
+			if !check1 {
+				isExecute = true
+			}
+			// RunID prefix files check
+			for _, r := range s.RunList {
+				check2 := isExistsAllResultFilesPrefixRunId(outputDirectoryPath+"/"+s.SampleId, r.RunId)
+				if !check2 {
+					isExecute = true
+				}
+			}
+			//fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, s.SampleId)
+		}
+		if isExecute {
+			executeCount += 1
+
+			fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, s.SampleId)
+			if !dryrunFlag {
+				eg.Go(func() error {
+					execCWL(outputDirectoryPath, workflowFilePath, s.SampleId)
+					return nil
+				})
+			}
+		}
 	}
+	if dryrunFlag {
+		fmt.Printf("[%d/%d] task will be executed.\n", executeCount, len(ss.SampleList))
+	}
+
+	// for i, s := range ss.SampleList {
+	// 	fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
+	// 	sampleId := s.SampleId
+	// 	eg.Go(func() error {
+	// 		// TODO check exit status
+	// 		execCWL(outputDirectoryPath, workflowFilePath, sampleId)
+	// 		return nil
+	// 	})
+	// }
 
 	if err := eg.Wait(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("job fin")
+	fmt.Println("fin")
 }
