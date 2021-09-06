@@ -282,11 +282,28 @@ func execCWL(outputDirectoryPath string, sampleId string) string {
 	// execute toil
 	//p, _ := os.Getwd()
 	// c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
-	c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", "outputDirectoryPath"+"/jobstores/"+sampleId+"-jobstore", "--outdir", "outputDirectoryPath"+"/"+sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", "outputDirectoryPath"+"/logs/"+sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
+	c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", outputDirectoryPath+"/jobstores/"+sampleId+"-jobstore", "--outdir", outputDirectoryPath+"/"+sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", outputDirectoryPath+"/logs/"+sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
 	// set environment value if needed
 	//c1.Env = append(os.Environ(), "TOIL_SLURM_ARGS=\"-w node[1-9]\"")
+	//
+	stdoutfile, _ := os.Create(outputDirectoryPath + "/toil-outputs/" + sampleId + "-stdout.txt")
+	defer stdoutfile.Close()
+	c1.Stdout = stdoutfile
+	//
+	stderrfile, _ := os.Create(outputDirectoryPath + "/toil-outputs/" + sampleId + "-stderr.txt")
+	defer stderrfile.Close()
+	c1.Stderr = stderrfile
+	//
 	c1.Start()
 	c1.Wait()
+	//
+	stdoutwriter := bufio.NewWriter(stdoutfile)
+	defer stdoutwriter.Flush()
+	//
+	stderrwriter := bufio.NewWriter(stderrfile)
+	defer stderrwriter.Flush()
+
+	//
 	return ""
 }
 
@@ -417,6 +434,21 @@ func main() {
 	if err := os.MkdirAll(outputDirectoryPath, 0755); err != nil {
 		fmt.Println(err)
 		fmt.Println("cannot create output directory")
+		return
+	}
+	if err := os.MkdirAll(outputDirectoryPath+"/toil-outputs", 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create toil outputs directory")
+		return
+	}
+	if err := os.MkdirAll(outputDirectoryPath+"/logs", 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create logs directory")
+		return
+	}
+	if err := os.MkdirAll(outputDirectoryPath+"/jobstores", 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create jobstores directory")
 		return
 	}
 	// create job file for CWL
