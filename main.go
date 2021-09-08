@@ -402,6 +402,7 @@ func execCWL(outputDirectoryPath string, workflowFilePath string, sampleId strin
 }
 
 var dryrunFlag bool
+var forceRunAllJobs bool
 var helpFlag bool
 var versionFlag bool
 var fileExistsCheckFlag bool
@@ -409,11 +410,17 @@ var fileHashCheckFlag bool
 
 func main() {
 	flag.BoolVarP(&dryrunFlag, "dry-run", "n", false, "Dry-run, do not execute acutal command")
+	flag.BoolVarP(&forceRunAllJobs, "force-run-all-jobs", "", false, "Force execute all jobs")
 	flag.BoolVarP(&helpFlag, "help", "h", false, "Show help message")
 	flag.BoolVarP(&versionFlag, "version", "v", false, "Show version")
 	flag.BoolVarP(&fileExistsCheckFlag, "file-exists-check", "", true, "Check file exists")
 	flag.BoolVarP(&fileHashCheckFlag, "file-hash-check", "", true, "Check file hash value")
 	flag.Parse()
+
+	if dryrunFlag && forceRunAllJobs {
+		fmt.Println("Can not set --dry-run and --force-run-all-jobs flag at same time")
+		return
+	}
 
 	if helpFlag {
 		fmt.Printf("Version: %s-%s\n", version, revision)
@@ -613,13 +620,17 @@ func main() {
 			}
 			//fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, s.SampleId)
 		}
-		if isExecute {
+		if isExecute || forceRunAllJobs {
 			executeCount += 1
+			// if forceRunAllJobs {
+			// 	os.RemoveAll(outputDirectoryPath + "/" + s.SampleId)
+			// }
 
 			fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, s.SampleId)
+			sampleId := s.SampleId
 			if !dryrunFlag {
 				eg.Go(func() error {
-					execCWL(outputDirectoryPath, workflowFilePath, s.SampleId)
+					execCWL(outputDirectoryPath, workflowFilePath, sampleId)
 					return nil
 				})
 			}
