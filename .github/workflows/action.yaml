@@ -30,7 +30,7 @@ jobs:
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
     - run: |
         mkdir -p dist
-        go build -o jgaworkflowmanager-$GOOS-$RELEASE_VERSION "-X main.version=${RELEASE_VERSION} -X main.revision=$(git rev-parse --short HEAD)" main.go
+        go build -o dist/jgaworkflowmanager-$GOOS-$RELEASE_VERSION -ldflags "-X main.version=${RELEASE_VERSION} -X main.revision=$(git rev-parse --short HEAD)" main.go
       shell: bash
     - uses: actions/upload-artifact@v2
       with:
