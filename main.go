@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/sync/errgroup"
@@ -526,6 +527,15 @@ func main() {
 
 	// Set output directory path
 	workflowFilePath := rss.WorkflowFile.Path
+	if !strings.HasPrefix(workflowFilePath, "http://") {
+		if !strings.HasPrefix(workflowFilePath, "https://") {
+			// currently check local filesystem only
+			if _, err := os.Stat(workflowFilePath); os.IsNotExist(err) {
+				fmt.Printf("Missing workflow file [%s]\n", workflowFilePath)
+				os.Exit(1)
+			}
+		}
+	}
 
 	// Set output directory path
 	outputDirectoryPath := rss.OutputDirectory.Path
