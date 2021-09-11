@@ -432,12 +432,12 @@ func main() {
 	flag.Parse()
 
 	if helpFlag {
-		buildVersionString(version, revision, date)
+		fmt.Printf(buildVersionString(version, revision, date))
 		flag.PrintDefaults()
 		return
 	}
 	if versionFlag {
-		buildVersionString(version, revision, date)
+		fmt.Printf(buildVersionString(version, revision, date))
 		return
 	}
 
