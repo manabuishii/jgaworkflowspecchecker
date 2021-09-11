@@ -40,3 +40,10 @@ func Test_checkSecondaryFilesExists_missing_pac_file(t *testing.T) {
 	assert.False(t, result, "pac file is missing so expected false")
 
 }
+
+func Test_checkSecondaryFilesExists_missing_dict_file(t *testing.T) {
+	result, _ := checkSecondaryFilesExists("./test/secondaryfile/case3/case3.fasta")
+
+	assert.False(t, result, "^.dict file is missing so expected false")
+
+}
