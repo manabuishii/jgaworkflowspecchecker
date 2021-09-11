@@ -60,23 +60,26 @@ type PathOnlyObject struct {
 }
 
 type referenceSchema struct {
-	WorkflowFile                          *PathOnlyObject `json:"workflow_file"`
-	OutputDirectory                       *PathOnlyObject `json:"output_directory"`
-	Reference                             *PathObject     `json:"reference"`
-	SortsamMaxRecordsInRam                int             `json:"sortsam_max_records_in_ram"`
-	SortsamJavaOptions                    string          `json:"sortsam_java_options"`
-	BwaNumThreads                         int             `json:"bwa_num_threads"`
-	BwaBasesPerBatch                      int             `json:"bwa_bases_per_batch"`
-	UseBqsr                               bool            `json:"use_bqsr"`
-	Dbsnp                                 *PathObject     `json:"dbsnp"`
-	Mills                                 *PathObject     `json:"mills"`
-	KnownIndels                           *PathObject     `json:"known_indels"`
-	SamtoolsNumThreads                    int             `json:"samtools_num_threads"`
-	Gatk4HaplotypeCallerNumThreads        int             `json:"gatk4_HaplotypeCaller_num_threads"`
-	BgzipNumThreads                       int             `json:"bgzip_num_threads"`
-	HaplotypecallerAutosomePARIntervalBed *PathObject     `json:"haplotypecaller_autosome_PAR_interval_bed"`
-	HaplotypecallerChrXNonPARIntervalBed  *PathObject     `json:"haplotypecaller_chrX_nonPAR_interval_bed"`
-	HaplotypecallerChrYNonPARIntervalBed  *PathObject     `json:"haplotypecaller_chrY_nonPAR_interval_bed"`
+	WorkflowFile                           *PathOnlyObject `json:"workflow_file"`
+	OutputDirectory                        *PathOnlyObject `json:"output_directory"`
+	Reference                              *PathObject     `json:"reference"`
+	SortsamMaxRecordsInRam                 int             `json:"sortsam_max_records_in_ram"`
+	SortsamJavaOptions                     string          `json:"sortsam_java_options"`
+	BwaNumThreads                          int             `json:"bwa_num_threads"`
+	BwaBasesPerBatch                       int             `json:"bwa_bases_per_batch"`
+	UseBqsr                                bool            `json:"use_bqsr"`
+	Dbsnp                                  *PathObject     `json:"dbsnp"`
+	Mills                                  *PathObject     `json:"mills"`
+	KnownIndels                            *PathObject     `json:"known_indels"`
+	SamtoolsNumThreads                     int             `json:"samtools_num_threads"`
+	Gatk4HaplotypeCallerNumThreads         int             `json:"gatk4_HaplotypeCaller_num_threads"`
+	BgzipNumThreads                        int             `json:"bgzip_num_threads"`
+	HaplotypecallerAutosomePARIntervalBed  *PathObject     `json:"haplotypecaller_autosome_PAR_interval_bed"`
+	HaplotypecallerAutosomePARIntervalList *PathOnlyObject `json:"haplotypecaller_autosome_PAR_interval_list"`
+	HaplotypecallerChrXNonPARIntervalBed   *PathObject     `json:"haplotypecaller_chrX_nonPAR_interval_bed"`
+	HaplotypecallerChrXNonPARIntervalList  *PathOnlyObject `json:"haplotypecaller_chrX_nonPAR_interval_list"`
+	HaplotypecallerChrYNonPARIntervalBed   *PathObject     `json:"haplotypecaller_chrY_nonPAR_interval_bed"`
+	HaplotypecallerChrYNonPARIntervalList  *PathOnlyObject `json:"haplotypecaller_chrY_nonPAR_interval_list"`
 }
 
 //
@@ -265,14 +268,23 @@ func outputReference(rss *referenceSchema) (string, error) {
 	byteBuf.WriteString("  class: File\n")
 	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerAutosomePARIntervalBed.Path))
 	byteBuf.WriteString("  format: http://edamontology.org/format_3584\n")
+	byteBuf.WriteString("haplotypecaller_autosome_PAR_interval_list:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerAutosomePARIntervalList.Path))
 	byteBuf.WriteString("haplotypecaller_chrX_nonPAR_interval_bed:\n")
 	byteBuf.WriteString("  class: File\n")
 	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerChrXNonPARIntervalBed.Path))
 	byteBuf.WriteString("  format: http://edamontology.org/format_3584\n")
+	byteBuf.WriteString("haplotypecaller_chrX_nonPAR_interval_list:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerChrXNonPARIntervalList.Path))
 	byteBuf.WriteString("haplotypecaller_chrY_nonPAR_interval_bed:\n")
 	byteBuf.WriteString("  class: File\n")
 	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerChrYNonPARIntervalBed.Path))
 	byteBuf.WriteString("  format: http://edamontology.org/format_3584\n")
+	byteBuf.WriteString("haplotypecaller_chrY_nonPAR_interval_list:\n")
+	byteBuf.WriteString("  class: File\n")
+	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerChrYNonPARIntervalList.Path))
 
 	return byteBuf.String(), nil
 }

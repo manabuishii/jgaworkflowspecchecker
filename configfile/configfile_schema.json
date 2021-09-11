@@ -138,6 +138,18 @@
         },
         "required": [ "path" ]
       },
+      "haplotypecaller_autosome_PAR_interval_list":{
+        "$id": "#haplotypecaller_autosome_PAR_interval_list",
+        "description": "haplotypecaller_autosome_PAR_interval_list autosome_PAR and ploidy 2",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "File path of haplotypecaller_autosome_PAR_interval_list",
+            "type": "string"
+          }
+        },
+        "required": [ "path" ]
+      },
       "haplotypecaller_chrX_nonPAR_interval_bed":{
         "$id": "#haplotypecaller_chrX_nonPAR_interval_bed",
         "description": "haplotypecaller_chrX_nonPAR_interval_bed",
@@ -154,6 +166,18 @@
         },
         "required": [ "path" ]
       },
+      "haplotypecaller_chrX_nonPAR_interval_list":{
+        "$id": "#haplotypecaller_chrX_nonPAR_interval_list",
+        "description": "haplotypecaller_chrX_nonPAR_interval_list",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "File path of haplotypecaller_chrX_nonPAR_interval_list chrX_nonPAR ploidy 1 and ploidy 2",
+            "type": "string"
+          }
+        },
+        "required": [ "path" ]
+      },
       "haplotypecaller_chrY_nonPAR_interval_bed":{
         "$id": "#haplotypecaller_chrY_nonPAR_interval_bed",
         "description": "haplotypecaller_chrY_nonPAR_interval_bed ploidy 1",
@@ -165,6 +189,22 @@
           },
           "format": {
             "description": "Format of haplotypecaller_chrY_nonPAR_interval_bed",
+            "type": "string"
+          }
+        },
+        "required": [ "path" ]
+      },
+      "haplotypecaller_chrY_nonPAR_interval_list":{
+        "$id": "#haplotypecaller_chrY_nonPAR_interval_list",
+        "description": "haplotypecaller_chrY_nonPAR_interval_list ploidy 1",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "File path of haplotypecaller_chrY_nonPAR_interval_list",
+            "type": "string"
+          },
+          "format": {
+            "description": "Format of haplotypecaller_chrY_nonPAR_interval_list",
             "type": "string"
           }
         },
@@ -188,7 +228,10 @@
       "gatk4_HaplotypeCaller_num_threads",
       "bgzip_num_threads",
       "haplotypecaller_autosome_PAR_interval_bed",
+      "haplotypecaller_autosome_PAR_interval_list",
       "haplotypecaller_chrX_nonPAR_interval_bed",
-      "haplotypecaller_chrY_nonPAR_interval_bed"
+      "haplotypecaller_chrX_nonPAR_interval_list",
+      "haplotypecaller_chrY_nonPAR_interval_bed",
+      "haplotypecaller_chrY_nonPAR_interval_list"
   ]
 }
