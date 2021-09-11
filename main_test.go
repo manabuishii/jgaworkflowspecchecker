@@ -47,3 +47,12 @@ func Test_checkSecondaryFilesExists_missing_dict_file(t *testing.T) {
 	assert.False(t, result, "^.dict file is missing so expected false")
 
 }
+
+func Test_checkRunDataFile_success(t *testing.T) {
+	fileExistsCheckFlag = true
+	fileHashCheckFlag = true
+	result, _ := checkRunDataFile("./test/testfile.txt", "39a870a194a787550b6b5d1f49629236")
+
+	assert.True(t, result, "md5 match is expected")
+
+}
