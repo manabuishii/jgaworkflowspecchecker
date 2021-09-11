@@ -155,6 +155,14 @@ func isExistsAllResultFilesPrefixSampleId(outputDirectoryPath string, sampleId s
 		".chrY_nonPAR_ploidy_1.g.vcf.gz.tbi.log",
 		".chrY_nonPAR_ploidy_1.g.vcf.log",
 		".cram",
+		".cram.autosome_PAR_ploidy_2.wgs_metrics",
+		".cram.autosome_PAR_ploidy_2.wgs_metrics.log",
+		".cram.chrX_nonPAR_ploidy_1.wgs_metrics",
+		".cram.chrX_nonPAR_ploidy_1.wgs_metrics.log",
+		".cram.chrX_nonPAR_ploidy_2.wgs_metrics",
+		".cram.chrX_nonPAR_ploidy_2.wgs_metrics.log",
+		".cram.chrY_nonPAR_ploidy_1.wgs_metrics",
+		".cram.chrY_nonPAR_ploidy_1.wgs_metrics.log",
 		".cram.collect_base_dist_by_cycle",
 		".cram.collect_base_dist_by_cycle.chart.pdf",
 		".cram.collect_base_dist_by_cycle.chart.png",
@@ -165,8 +173,11 @@ func isExistsAllResultFilesPrefixSampleId(outputDirectoryPath string, sampleId s
 		".cram.log",
 		".log",
 		".metrics.txt"} {
-		if _, err := os.Stat(fn + "/" + sampleId + extension); os.IsNotExist(err) {
-			fmt.Printf("Missing file [%s]\n", fn+extension)
+		// outputDirectoryPath/sampleId/sampleId.*
+		// outputDirectoryPath/XX00000/XX00000.*
+		targetFile := fn + "/" + sampleId + extension
+		if _, err := os.Stat(targetFile); os.IsNotExist(err) {
+			fmt.Printf("Missing file [%s]\n", targetFile)
 			result = false
 		}
 

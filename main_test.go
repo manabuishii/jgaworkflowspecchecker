@@ -79,3 +79,32 @@ func Test_buildVersionString_full(t *testing.T) {
 	assert.Equal(t, "Version: 0.9.0-abcdefab (built at 2021-11-11T11:22:33)\n", result, "version string just version, commit id and date")
 
 }
+
+func Test_isExistsAllResultFilesPrefixSampleId_success(t *testing.T) {
+	result := isExistsAllResultFilesPrefixSampleId("test/resultfile/success", "XX00000")
+
+	assert.True(t, result, "All files MUST be exists")
+
+}
+
+func Test_isExistsAllResultFilesPrefixSampleId_missing_crai(t *testing.T) {
+	// XX00000.cram.crai is missing
+	result := isExistsAllResultFilesPrefixSampleId("test/resultfile/fail", "XX00000")
+
+	assert.False(t, result, "XX00000.cram.crai is missing")
+
+}
+
+func Test_isExistsAllResultFilesPrefixRunId_success(t *testing.T) {
+	result := isExistsAllResultFilesPrefixRunId("test/resultfile/success/XX00000", "YYY0000000")
+
+	assert.True(t, result, "All files MUST be exists")
+
+}
+
+func Test_isExistsAllResultFilesPrefixRunId_fail_runid_bam(t *testing.T) {
+	result := isExistsAllResultFilesPrefixRunId("test/resultfile/fail_runid_bam/XX00000", "YYY0000000")
+
+	assert.False(t, result, "YYY0000000.bam is missing")
+
+}
