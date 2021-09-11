@@ -56,3 +56,12 @@ func Test_checkRunDataFile_success(t *testing.T) {
 	assert.True(t, result, "md5 match is expected")
 
 }
+
+func Test_checkRunDataFile_fail(t *testing.T) {
+	fileExistsCheckFlag = true
+	fileHashCheckFlag = true
+	result, _ := checkRunDataFile("./test/testfile.txt", "aa")
+
+	assert.False(t, result, "md5 not match is expected")
+
+}
