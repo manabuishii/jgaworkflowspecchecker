@@ -65,3 +65,17 @@ func Test_checkRunDataFile_fail(t *testing.T) {
 	assert.False(t, result, "md5 not match is expected")
 
 }
+
+func Test_buildVersionString_local(t *testing.T) {
+	result := buildVersionString("dev", "", "")
+
+	assert.Equal(t, "Version: dev- (built at )\n", result, "version string just dev")
+
+}
+
+func Test_buildVersionString_full(t *testing.T) {
+	result := buildVersionString("0.9.0", "abcdefab", "2021-11-11T11:22:33")
+
+	assert.Equal(t, "Version: 0.9.0-abcdefab (built at 2021-11-11T11:22:33)\n", result, "version string just version, commit id and date")
+
+}

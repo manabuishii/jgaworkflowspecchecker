@@ -82,9 +82,12 @@ type referenceSchema struct {
 	HaplotypecallerChrYNonPARIntervalList  *PathOnlyObject `json:"haplotypecaller_chrY_nonPAR_interval_list"`
 }
 
-//
-var version string
-var revision string
+// nolint: gochecknoglobals
+var (
+	version  = "dev"
+	revision = ""
+	date     = ""
+)
 
 //
 
@@ -409,6 +412,11 @@ func execCWL(outputDirectoryPath string, workflowFilePath string, sampleId strin
 	return ""
 }
 
+func buildVersionString(version, revision, date string) string {
+	result := fmt.Sprintf("Version: %s-%s (built at %s)\n", version, revision, date)
+	return result
+}
+
 var dryrunFlag bool
 var helpFlag bool
 var versionFlag bool
@@ -424,12 +432,12 @@ func main() {
 	flag.Parse()
 
 	if helpFlag {
-		fmt.Printf("Version: %s-%s\n", version, revision)
+		buildVersionString(version, revision, date)
 		flag.PrintDefaults()
 		return
 	}
 	if versionFlag {
-		fmt.Printf("Version: %s-%s\n", version, revision)
+		buildVersionString(version, revision, date)
 		return
 	}
 
