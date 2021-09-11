@@ -26,3 +26,17 @@ func Test_getFileNameWithoutExtension_2ext(t *testing.T) {
 	assert.Equal(t, "testfile.fa", ext, "Remove directory and last extention.")
 
 }
+
+func Test_checkSecondaryFilesExists_all_files_exists(t *testing.T) {
+	result, _ := checkSecondaryFilesExists("./test/secondaryfile/case1/case1.fasta")
+
+	assert.True(t, result, "Check all secondary file")
+
+}
+
+func Test_checkSecondaryFilesExists_missing_pac_file(t *testing.T) {
+	result, _ := checkSecondaryFilesExists("./test/secondaryfile/case2/case2.fasta")
+
+	assert.False(t, result, "pac file is missing so expected false")
+
+}
