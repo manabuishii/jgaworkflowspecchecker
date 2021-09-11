@@ -26,3 +26,42 @@ func Test_getFileNameWithoutExtension_2ext(t *testing.T) {
 	assert.Equal(t, "testfile.fa", ext, "Remove directory and last extention.")
 
 }
+
+func Test_checkSecondaryFilesExists_all_files_exists(t *testing.T) {
+	result, _ := checkSecondaryFilesExists("./test/secondaryfile/case1/case1.fasta")
+
+	assert.True(t, result, "Check all secondary file")
+
+}
+
+func Test_checkSecondaryFilesExists_missing_pac_file(t *testing.T) {
+	result, _ := checkSecondaryFilesExists("./test/secondaryfile/case2/case2.fasta")
+
+	assert.False(t, result, "pac file is missing so expected false")
+
+}
+
+func Test_checkSecondaryFilesExists_missing_dict_file(t *testing.T) {
+	result, _ := checkSecondaryFilesExists("./test/secondaryfile/case3/case3.fasta")
+
+	assert.False(t, result, "^.dict file is missing so expected false")
+
+}
+
+func Test_checkRunDataFile_success(t *testing.T) {
+	fileExistsCheckFlag = true
+	fileHashCheckFlag = true
+	result, _ := checkRunDataFile("./test/testfile.txt", "39a870a194a787550b6b5d1f49629236")
+
+	assert.True(t, result, "md5 match is expected")
+
+}
+
+func Test_checkRunDataFile_fail(t *testing.T) {
+	fileExistsCheckFlag = true
+	fileHashCheckFlag = true
+	result, _ := checkRunDataFile("./test/testfile.txt", "aa")
+
+	assert.False(t, result, "md5 not match is expected")
+
+}
