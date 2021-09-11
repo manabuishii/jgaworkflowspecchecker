@@ -8,6 +8,27 @@ Spec checker
 GO111MODULE=on
 ```
 
+# Develop
+
+## Test
+
+### Simply test
+
+```
+go test
+```
+
+### Coverage
+
+```
+go test -race -coverprofile=coverage.txt -covermode=atomic 
+go tool cover -html=coverage.txt -o cover.html
+```
+
+```
+open cover.html
+```
+
 # schematyper
 
 ```
