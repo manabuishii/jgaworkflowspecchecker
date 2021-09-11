@@ -188,7 +188,10 @@
       "gatk4_HaplotypeCaller_num_threads",
       "bgzip_num_threads",
       "haplotypecaller_autosome_PAR_interval_bed",
+      "haplotypecaller_autosome_PAR_interval_list",
       "haplotypecaller_chrX_nonPAR_interval_bed",
-      "haplotypecaller_chrY_nonPAR_interval_bed"
+      "haplotypecaller_chrX_nonPAR_interval_list",
+      "haplotypecaller_chrY_nonPAR_interval_bed",
+      "haplotypecaller_chrY_nonPAR_interval_list"
   ]
 }
