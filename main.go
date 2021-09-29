@@ -181,7 +181,15 @@ func isExistsAllResultFilesPrefixSampleId(outputDirectoryPath string, sampleId s
 			fmt.Printf("Missing file [%s]\n", targetFile)
 			result = false
 		}
-
+		// ".log" file is not need to check filesize.
+		// other files MUST be check filesize is not 0
+		if !strings.HasSuffix(extension, ".log") {
+			fileinfo, _ := os.Stat(targetFile)
+			if fileinfo.Size() == 0 {
+				fmt.Printf("File size is zero [%s]\n", targetFile)
+				return false
+			}
+		}
 	}
 	return result
 }
