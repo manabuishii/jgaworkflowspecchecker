@@ -413,7 +413,7 @@ func execCWL(outputDirectoryPath string, workflowFilePath string, sampleId strin
 	exitcodefile, _ := os.Create(outputDirectoryPath + "/toil-outputs/" + sampleId + "-exitcode.txt")
 	defer exitcodefile.Close()
 	exitCode := c1.ProcessState.ExitCode()
-	exitcodefile.WriteString(fmt.Sprintf("%d", exitCode))
+	exitcodefile.WriteString(fmt.Sprintf("%d\n", exitCode))
 	//
 	stdoutwriter := bufio.NewWriter(stdoutfile)
 	defer stdoutwriter.Flush()
