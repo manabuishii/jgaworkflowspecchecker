@@ -435,9 +435,12 @@ func execCWL(outputDirectoryPath string, workflowFilePath string, sampleId strin
 		if exitCode == 0 {
 			fmt.Printf("SampleId: %s is successfully finished\n", sampleId)
 		} else {
+			stdoutfileabs, _ := filepath.Abs(stdoutfile.Name())
+			stderrfileabs, _ := filepath.Abs(stderrfile.Name())
+
 			fmt.Printf("SampleId: %s is fail. exitcode = %d\n", sampleId, exitCode)
-			fmt.Println("  See stdout: ", stdoutfile)
-			fmt.Println("  See stderr: ", stderrfile)
+			fmt.Println("  See stdout: ", stdoutfileabs)
+			fmt.Println("  See stderr: ", stderrfileabs)
 		}
 	}()
 	//

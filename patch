@@ -1,0 +1,97 @@
+--- configfile/configfile_schema.json	2021-09-06 17:00:22.000000000 +0900
++++ configfile/configfile_schema_0.8.0.json	2021-09-11 10:06:47.000000000 +0900
+@@ -122,65 +122,49 @@
+         "description": "",
+         "type": "integer"
+       },
+-      "haplotypecaller_autosome_PAR_ploidy_2_interval_bed":{
+-        "$id": "#haplotypecaller_autosome_PAR_ploidy_2_interval_bed",
+-        "description": "haplotypecaller_autosome_PAR_ploidy_2_interval_bed",
++      "haplotypecaller_autosome_PAR_interval_bed":{
++        "$id": "#haplotypecaller_autosome_PAR_interval_bed",
++        "description": "haplotypecaller_autosome_PAR_interval_bed autosome_PAR and ploidy 2",
+         "type": "object",
+         "properties": {
+           "path": {
+-            "description": "File path of haplotypecaller_autosome_PAR_ploidy_2_interval_bed",
++            "description": "File path of haplotypecaller_autosome_PAR_interval_bed",
+             "type": "string"
+           },
+           "format": {
+-            "description": "Format of haplotypecaller_autosome_PAR_ploidy_2_interval_bed",
++            "description": "Format of haplotypecaller_autosome_PAR_interval_bed",
+             "type": "string"
+           }
+         },
+         "required": [ "path" ]
+       },
+-      "haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed":{
+-        "$id": "#haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed",
+-        "description": "haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed",
++      "haplotypecaller_chrX_nonPAR_interval_bed":{
++        "$id": "#haplotypecaller_chrX_nonPAR_interval_bed",
++        "description": "haplotypecaller_chrX_nonPAR_interval_bed",
+         "type": "object",
+         "properties": {
+           "path": {
+-            "description": "File path of haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed",
++            "description": "File path of haplotypecaller_chrX_nonPAR_interval_bed chrX_nonPAR ploidy 1 and ploidy 2",
+             "type": "string"
+           },
+           "format": {
+-            "description": "Format of haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed",
++            "description": "Format of haplotypecaller_chrX_nonPAR_interval_bed",
+             "type": "string"
+           }
+         },
+         "required": [ "path" ]
+       },
+-      "haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed":{
+-        "$id": "#haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed",
+-        "description": "haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed",
++      "haplotypecaller_chrY_nonPAR_interval_bed":{
++        "$id": "#haplotypecaller_chrY_nonPAR_interval_bed",
++        "description": "haplotypecaller_chrY_nonPAR_interval_bed ploidy 1",
+         "type": "object",
+         "properties": {
+           "path": {
+-            "description": "File path of haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed",
++            "description": "File path of haplotypecaller_chrY_nonPAR_interval_bed",
+             "type": "string"
+           },
+           "format": {
+-            "description": "Format of haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed",
+-            "type": "string"
+-          }
+-        },
+-        "required": [ "path" ]
+-      },
+-      "haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed":{
+-        "$id": "#haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed",
+-        "description": "haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed",
+-        "type": "object",
+-        "properties": {
+-          "path": {
+-            "description": "File path of haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed",
+-            "type": "string"
+-          },
+-          "format": {
+-            "description": "Format of haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed",
++            "description": "Format of haplotypecaller_chrY_nonPAR_interval_bed",
+             "type": "string"
+           }
+         },
+@@ -203,9 +187,8 @@
+       "samtools_num_threads",
+       "gatk4_HaplotypeCaller_num_threads",
+       "bgzip_num_threads",
+-      "haplotypecaller_autosome_PAR_ploidy_2_interval_bed",
+-      "haplotypecaller_chrX_nonPAR_ploidy_2_interval_bed",
+-      "haplotypecaller_chrX_nonPAR_ploidy_1_interval_bed",
+-      "haplotypecaller_chrY_nonPAR_ploidy_1_interval_bed"
++      "haplotypecaller_autosome_PAR_interval_bed",
++      "haplotypecaller_chrX_nonPAR_interval_bed",
++      "haplotypecaller_chrY_nonPAR_interval_bed"
+   ]
+ }
+\ No newline at end of file

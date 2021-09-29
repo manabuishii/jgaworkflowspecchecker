@@ -1,0 +1,59 @@
+The document is valid
+Load sample
+Load end
+Name is [nig]
+index: 0, SampleId: HG00174
+&{ERR1025659 {SE /lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1025659.small_1.fastq.gz   }}
+index: 0, RunId: ERR1025659
+pe or se: [SE]
+fq1: [/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1025659.small_1.fastq.gz]
+fq2: []
+result=false
+&{ERR1025658 {SE /lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1025659.small_2.fastq.gz   }}
+index: 1, RunId: ERR1025658
+pe or se: [SE]
+fq1: [/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1025659.small_2.fastq.gz]
+fq2: []
+result=false
+&{ERR1419195 {SE /lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1419195.small_1.fastq.gz   }}
+index: 2, RunId: ERR1419195
+pe or se: [SE]
+fq1: [/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1419195.small_1.fastq.gz]
+fq2: []
+result=false
+&{ERR1419194 {SE /lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1419195.small_2.fastq.gz   }}
+index: 3, RunId: ERR1419194
+pe or se: [SE]
+fq1: [/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1419195.small_2.fastq.gz]
+fq2: []
+result=false
+index: 1, SampleId: XX00172
+&{ERR1025659 {SE /lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1025659.small_1.fastq.gz   }}
+index: 0, RunId: ERR1025659
+pe or se: [SE]
+fq1: [/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1025659.small_1.fastq.gz]
+fq2: []
+result=false
+&{ERR1025658 {SE /lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1025659.small_2.fastq.gz   }}
+index: 1, RunId: ERR1025658
+pe or se: [SE]
+fq1: [/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1025659.small_2.fastq.gz]
+fq2: []
+result=false
+&{ERR1419195 {SE /lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1419195.small_1.fastq.gz   }}
+index: 2, RunId: ERR1419195
+pe or se: [SE]
+fq1: [/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1419195.small_1.fastq.gz]
+fq2: []
+result=false
+&{ERR1419194 {SE /lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1419195.small_2.fastq.gz   }}
+index: 3, RunId: ERR1419194
+pe or se: [SE]
+fq1: [/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1419195.small_2.fastq.gz]
+fq2: []
+result=false
+The reference config document is valid
+Load sample
+Load end
+End: [2] 2021-08-22 20:44:22.592427 +0900 JST m=+10.006934329
+End: [1] 2021-08-22 20:44:22.592457 +0900 JST m=+10.006963362

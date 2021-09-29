@@ -1,0 +1,34 @@
+{
+        "name": "nig",
+    "samplelist": [
+        {
+            "sampleid": "HG00174",
+            "platform": "Illumina NovaSeq6000",
+            "runlist": [
+                {
+                    "runid": "ERR1025659",
+                    "data": {
+                        "se_or_pe": "PE",
+                        "fq1": "/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1025659.small_1.fastq.gz",
+                        "fq2": "/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1025659.small_2.fastq.gz"
+                    }
+                },
+                {
+                    "runid": "ERR1419195",
+                    "data": {
+                        "se_or_pe": "SE",
+                        "fq1": "/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1419195.small_1.fastq.gz"
+                    }
+                },
+                {
+                    "runid": "ERR1419194",
+                    "data": {
+                        "se_or_pe": "SE",
+                        "fq1": "/lustre8/home/hachiya-pg/jga-analysis-dev/test-03/small-fq/ERR1419195.small_2.fastq.gz"
+                    }
+                }
+                
+            ]
+        }
+    ]
+}
