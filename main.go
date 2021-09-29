@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/sync/errgroup"
@@ -393,7 +394,8 @@ func execCWL(outputDirectoryPath string, workflowFilePath string, sampleId strin
 	// execute toil
 	//p, _ := os.Getwd()
 	// c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
-	c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", outputDirectoryPath+"/jobstores/"+sampleId+"-jobstore", "--outdir", outputDirectoryPath+"/"+sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", outputDirectoryPath+"/logs/"+sampleId+".log", workflowFilePath, sampleId+"_jobfile.yaml")
+	commandArgs := createToilCwlRunnerArguments(outputDirectoryPath, sampleId, workflowFilePath)
+	c1 := exec.Command("toil-cwl-runner", commandArgs...)
 	// set environment value if needed
 	//c1.Env = append(os.Environ(), "TOIL_SLURM_ARGS=\"-w node[1-9]\"")
 	//
@@ -421,6 +423,25 @@ func execCWL(outputDirectoryPath string, workflowFilePath string, sampleId strin
 
 	//
 	return ""
+}
+
+func getCurrentTime() time.Time {
+	return time.Now()
+}
+
+func createJobStoreDir(outputDirectoryPath string, sampleId string, currentTime time.Time) string {
+	return outputDirectoryPath + "/jobstores/" + sampleId + "-jobstore-" + currentTime.Format(time.RFC3339)
+}
+func createLogFilePath(outputDirectoryPath string, sampleId string, currentTime time.Time) string {
+	return outputDirectoryPath + "/logs/" + sampleId + "-" + currentTime.Format(time.RFC3339) + ".log"
+}
+
+func createToilCwlRunnerArguments(outputDirectoryPath string, sampleId string, workflowFilePath string) []string {
+	currentTime := getCurrentTime()
+	jobStoreDir := createJobStoreDir(outputDirectoryPath, sampleId, currentTime)
+	logFilePath := createLogFilePath(outputDirectoryPath, sampleId, currentTime)
+	commandArgs := []string{"--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", jobStoreDir, "--outdir", outputDirectoryPath + "/" + sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", logFilePath, workflowFilePath, sampleId + "_jobfile.yaml"}
+	return commandArgs
 }
 
 func buildVersionString(version, revision, date string) string {
