@@ -95,6 +95,14 @@ func Test_isExistsAllResultFilesPrefixSampleId_missing_crai(t *testing.T) {
 
 }
 
+func Test_isExistsAllResultFilesPrefixSampleId_filesize_zero(t *testing.T) {
+	// XX00000.cram.crai is missing
+	result := isExistsAllResultFilesPrefixSampleId("test/resultfile/filesizezero", "XX00000")
+
+	assert.False(t, result, "XX00000.cram.crai is missing")
+
+}
+
 func Test_isExistsAllResultFilesPrefixRunId_success(t *testing.T) {
 	result := isExistsAllResultFilesPrefixRunId("test/resultfile/success/XX00000", "YYY0000000")
 
