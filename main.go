@@ -180,14 +180,15 @@ func isExistsAllResultFilesPrefixSampleId(outputDirectoryPath string, sampleId s
 		if _, err := os.Stat(targetFile); os.IsNotExist(err) {
 			fmt.Printf("Missing file [%s]\n", targetFile)
 			result = false
-		}
-		// ".log" file is not need to check filesize.
-		// other files MUST be check filesize is not 0
-		if !strings.HasSuffix(extension, ".log") {
-			fileinfo, _ := os.Stat(targetFile)
-			if fileinfo.Size() == 0 {
-				fmt.Printf("File size is zero [%s]\n", targetFile)
-				return false
+		} else {
+			// ".log" file is not need to check filesize.
+			// other files MUST be check filesize is not 0
+			if !strings.HasSuffix(extension, ".log") {
+				fileinfo, _ := os.Stat(targetFile)
+				if fileinfo.Size() == 0 {
+					fmt.Printf("File size is zero [%s]\n", targetFile)
+					result = false
+				}
 			}
 		}
 	}
