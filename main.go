@@ -429,7 +429,17 @@ func execCWL(outputDirectoryPath string, workflowFilePath string, sampleId strin
 	//
 	stderrwriter := bufio.NewWriter(stderrfile)
 	defer stderrwriter.Flush()
-
+	//
+	defer func() {
+		// display messages depending on exitCode
+		if exitCode == 0 {
+			fmt.Printf("SampleId: %s is successfully finished\n", sampleId)
+		} else {
+			fmt.Printf("SampleId: %s is fail. exitcode = %d\n", sampleId, exitCode)
+			fmt.Println("  See stdout: ", stdoutfile)
+			fmt.Println("  See stderr: ", stderrfile)
+		}
+	}()
 	//
 	return ""
 }
