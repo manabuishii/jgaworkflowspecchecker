@@ -452,10 +452,10 @@ func getCurrentTime() time.Time {
 }
 
 func createJobStoreDir(outputDirectoryPath string, sampleId string, currentTime time.Time) string {
-	return outputDirectoryPath + "/jobstores/" + sampleId + "-jobstore-" + currentTime.Format(time.RFC3339)
+	return outputDirectoryPath + "/jobstores/" + sampleId + "-jobstore-" + currentTime.Format("20060102150405")
 }
 func createLogFilePath(outputDirectoryPath string, sampleId string, currentTime time.Time) string {
-	return outputDirectoryPath + "/logs/" + sampleId + "-" + currentTime.Format(time.RFC3339) + ".log"
+	return outputDirectoryPath + "/logs/" + sampleId + "-" + currentTime.Format("20060102150405") + ".log"
 }
 
 func createToilCwlRunnerArguments(outputDirectoryPath string, sampleId string, workflowFilePath string) []string {
