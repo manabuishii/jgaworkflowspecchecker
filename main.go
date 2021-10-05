@@ -471,6 +471,14 @@ func buildVersionString(version, revision, date string) string {
 	return result
 }
 
+func isExistsToilCWLRunner() bool {
+	c1 := exec.Command("which", "toil-cwl-runner")
+	c1.Start()
+	c1.Wait()
+	exitCode := c1.ProcessState.ExitCode()
+	return exitCode == 0
+}
+
 var dryrunFlag bool
 var helpFlag bool
 var versionFlag bool
@@ -664,6 +672,9 @@ func main() {
 	// create job file for CWL
 	createJobFile(&ss, &rss)
 
+	// check toil-cwl-runner is exists or not
+	foundToilCWLRunner := isExistsToilCWLRunner()
+
 	// dry-run
 
 	// exec and wait
@@ -698,10 +709,13 @@ func main() {
 			fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, s.SampleId)
 			sampleId := s.SampleId
 			if !dryrunFlag {
-				eg.Go(func() error {
-					execCWL(outputDirectoryPath, workflowFilePath, sampleId)
-					return nil
-				})
+				if foundToilCWLRunner {
+					// only exec when toil-cwl-runner is found
+					eg.Go(func() error {
+						execCWL(outputDirectoryPath, workflowFilePath, sampleId)
+						return nil
+					})
+				}
 			}
 		}
 	}
@@ -722,5 +736,9 @@ func main() {
 	if err := eg.Wait(); err != nil {
 		log.Fatal(err)
 	}
+	if foundToilCWLRunner {
+		fmt.Println("Can not find toil-cwl-runner")
+	}
+
 	fmt.Println("fin")
 }
