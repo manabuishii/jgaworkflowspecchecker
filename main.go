@@ -472,11 +472,63 @@ func buildVersionString(version, revision, date string) string {
 }
 
 func isExistsToilCWLRunner() bool {
-	c1 := exec.Command("type", "toil-cwl-runner")
-	c1.Start()
-	c1.Wait()
-	exitCode := c1.ProcessState.ExitCode()
-	return exitCode == 0
+	_, err := exec.LookPath("toil-cwl-runner")
+	return err == nil
+}
+
+func isExistsSbatch() bool {
+	_, err := exec.LookPath("sbatch")
+	return err == nil
+}
+
+func isInVirtualenv() bool {
+	result := false
+	result = result || isInPythonVirtualenv()
+	result = result || isInCondaEnv()
+	return result
+}
+
+func isInCondaEnv() bool {
+	result := false
+	condavenv := os.Getenv("CONDA_DEFAULT_ENV")
+	if condavenv != "" {
+		result = true
+	}
+	return result
+}
+
+func isInPythonVirtualenv() bool {
+	result := false
+	venv := os.Getenv("VIRTUAL_ENV")
+	if venv != "" {
+		result = true
+	}
+	return result
+}
+
+func displayJobManagerRecoginition(workflowFilePath string) {
+	fmt.Printf("Workflow file is exists [%t]\n", isExistsWorkflowFile(workflowFilePath))
+	fmt.Printf("toil-cwl-runner is exists [%t]\n", isExistsToilCWLRunner())
+	fmt.Printf("Using Virtualenv if true set TOIL_CHECK_ENV=True [%t]\n", isInVirtualenv())
+
+	fmt.Printf("  Using Python virtualenv [%t]\n", isInPythonVirtualenv())
+	fmt.Printf("  Using Conda virtual env [%t]\n", isInCondaEnv())
+	fmt.Printf("sbatch(slurm) is exists [%t]\n", isExistsSbatch())
+}
+
+/*
+  Check whether workflow path is exists .
+  MEMO: Path starts http:// or https:// , do not check.
+*/
+func isExistsWorkflowFile(workflowFilePath string) bool {
+	if !strings.HasPrefix(workflowFilePath, "http://") {
+		if !strings.HasPrefix(workflowFilePath, "https://") {
+			if _, err := os.Stat(workflowFilePath); os.IsNotExist(err) {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 var dryrunFlag bool
@@ -484,6 +536,7 @@ var helpFlag bool
 var versionFlag bool
 var fileExistsCheckFlag bool
 var fileHashCheckFlag bool
+var displayJobManagerRecoginitionFlag bool
 
 func main() {
 	flag.BoolVarP(&dryrunFlag, "dry-run", "n", false, "Dry-run, do not execute acutal command")
@@ -491,6 +544,7 @@ func main() {
 	flag.BoolVarP(&versionFlag, "version", "v", false, "Show version")
 	flag.BoolVarP(&fileExistsCheckFlag, "file-exists-check", "", true, "Check file exists")
 	flag.BoolVarP(&fileHashCheckFlag, "file-hash-check", "", true, "Check file hash value")
+	flag.BoolVarP(&displayJobManagerRecoginitionFlag, "display-jobmanager-recognition", "", true, "Display JobManager Recognition")
 	flag.Parse()
 
 	if helpFlag {
@@ -604,14 +658,16 @@ func main() {
 
 	// Set output directory path
 	workflowFilePath := rss.WorkflowFile.Path
-	if !strings.HasPrefix(workflowFilePath, "http://") {
-		if !strings.HasPrefix(workflowFilePath, "https://") {
-			// currently check local filesystem only
-			if _, err := os.Stat(workflowFilePath); os.IsNotExist(err) {
-				fmt.Printf("Missing workflow file [%s]\n", workflowFilePath)
-				os.Exit(1)
-			}
-		}
+	// display
+	if displayJobManagerRecoginitionFlag {
+		displayJobManagerRecoginition(workflowFilePath)
+		return
+	}
+
+	// currently check local filesystem only
+	if !isExistsWorkflowFile(workflowFilePath) {
+		fmt.Printf("Missing workflow file [%s]\n", workflowFilePath)
+		os.Exit(1)
 	}
 
 	// Set output directory path
