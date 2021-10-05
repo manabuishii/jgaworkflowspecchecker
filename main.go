@@ -481,6 +481,11 @@ func isExistsSbatch() bool {
 	return err == nil
 }
 
+func isExistsSingularity() bool {
+	_, err := exec.LookPath("singularity")
+	return err == nil
+}
+
 func isInVirtualenv() bool {
 	result := false
 	result = result || isInPythonVirtualenv()
@@ -514,6 +519,7 @@ func displayJobManagerRecoginition(workflowFilePath string) {
 	fmt.Printf("  Using Python virtualenv [%t]\n", isInPythonVirtualenv())
 	fmt.Printf("  Using Conda virtual env [%t]\n", isInCondaEnv())
 	fmt.Printf("sbatch(slurm) is exists [%t]\n", isExistsSbatch())
+	fmt.Printf("singularity is exists [%t]\n", isExistsSingularity())
 }
 
 /*
