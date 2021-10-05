@@ -472,7 +472,7 @@ func buildVersionString(version, revision, date string) string {
 }
 
 func isExistsToilCWLRunner() bool {
-	c1 := exec.Command("which", "toil-cwl-runner")
+	c1 := exec.Command("type", "toil-cwl-runner")
 	c1.Start()
 	c1.Wait()
 	exitCode := c1.ProcessState.ExitCode()
