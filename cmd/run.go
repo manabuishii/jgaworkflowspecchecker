@@ -138,7 +138,11 @@ func runmain(args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	// check workflow file is exists
+	if !utils.CheckAndDisplayFilesForExecute(&rss) {
+		fmt.Println("Some files for workflow execution are missing.")
+		os.Exit(1)
+	}
 	// create job file for CWL
 	utils.CreateJobFile(&ss, &rss)
 

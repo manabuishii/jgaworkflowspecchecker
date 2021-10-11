@@ -34,7 +34,8 @@ Slurm command
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("displayJobmanagerRecognition called")
 		// TODO resolv workflow path
-		utils.DisplayJobManagerRecoginition("WORKFLOW PATH")
+		loadSampleSheetAndConfigFile(args)
+		utils.DisplayJobManagerRecoginition(&rss)
 	},
 }
 

@@ -126,6 +126,97 @@ func outputReference(rss *ReferenceSchema) (string, error) {
 	return byteBuf.String(), nil
 }
 
+/*
+ * Check files inside config file are exists.
+ * Return value:
+ *   true: all files are exists
+ *   false: some files are missing
+ */
+func CheckOutputReference(rss *ReferenceSchema) bool {
+	result := true
+	// reference file
+	if !IsExistsFile(rss.Reference.Path) {
+		fmt.Printf("Referenece file [%s] is missing\n", rss.Reference.Path)
+		result = false
+	}
+	// dbsnp
+	if !IsExistsFile(rss.Dbsnp.Path) {
+		fmt.Printf("dbsnp file [%s] is missing\n", rss.Dbsnp.Path)
+		result = false
+	}
+	// mills
+	if !IsExistsFile(rss.Mills.Path) {
+		fmt.Printf("mills file [%s] is missing\n", rss.Mills.Path)
+		result = false
+	}
+	// known_indels
+	if !IsExistsFile(rss.KnownIndels.Path) {
+		fmt.Printf("known_indels file [%s] is missing\n", rss.KnownIndels.Path)
+		result = false
+	}
+	// haplotypecaller_autosome_PAR_interval_bed
+	if !IsExistsFile(rss.HaplotypecallerAutosomePARIntervalBed.Path) {
+		fmt.Printf("haplotypecaller_autosome_PAR_interval_bed file [%s] is missing\n", rss.HaplotypecallerAutosomePARIntervalBed.Path)
+		result = false
+	}
+	// haplotypecaller_autosome_PAR_interval_list
+	if !IsExistsFile(rss.HaplotypecallerAutosomePARIntervalList.Path) {
+		fmt.Printf("haplotypecaller_autosome_PAR_interval_list file [%s] is missing\n", rss.HaplotypecallerAutosomePARIntervalList.Path)
+		result = false
+	}
+	// haplotypecaller_chrX_nonPAR_interval_bed
+	if !IsExistsFile(rss.HaplotypecallerChrXNonPARIntervalBed.Path) {
+		fmt.Printf("haplotypecaller_chrX_nonPAR_interval_bed file [%s] is missing\n", rss.HaplotypecallerChrXNonPARIntervalBed.Path)
+		result = false
+	}
+	// haplotypecaller_chrX_nonPAR_interval_list
+	if !IsExistsFile(rss.HaplotypecallerChrXNonPARIntervalList.Path) {
+		fmt.Printf("haplotypecaller_chrX_nonPAR_interval_list file [%s] is missing\n", rss.HaplotypecallerChrXNonPARIntervalList.Path)
+		result = false
+	}
+	// haplotypecaller_chrY_nonPAR_interval_bed
+	if !IsExistsFile(rss.HaplotypecallerChrYNonPARIntervalBed.Path) {
+		fmt.Printf("haplotypecaller_chrY_nonPAR_interval_bed file [%s] is missing\n", rss.HaplotypecallerChrYNonPARIntervalBed.Path)
+		result = false
+	}
+	// haplotypecaller_chrY_nonPAR_interval_list
+	if !IsExistsFile(rss.HaplotypecallerChrYNonPARIntervalList.Path) {
+		fmt.Printf("haplotypecaller_chrY_nonPAR_interval_list file [%s] is missing\n", rss.HaplotypecallerChrYNonPARIntervalList.Path)
+		result = false
+	}
+
+	return result
+}
+
+/*
+ * Check and display files for workflow execution .
+ * Return value:
+ *   true: all files are exists
+ *   false: some files are missing
+ */
+func CheckAndDisplayFilesForExecute(rss *ReferenceSchema) bool {
+	result := true
+	// Workflow file
+	if !IsExistsWorkflowFile(rss.WorkflowFile.Path) {
+		fmt.Printf("workflow file [%s] is missing\n", rss.WorkflowFile.Path)
+		result = false
+	}
+	// Secondary files
+	secondaryFilesFlag, _ := CheckSecondaryFilesExists(rss.Reference.Path)
+	if !secondaryFilesFlag {
+		fmt.Printf("Some secondary files are missing\n")
+		result = false
+	}
+	//
+	refFilesFlag := CheckOutputReference(rss)
+	if !refFilesFlag {
+		fmt.Printf("Some files are missing\n")
+		result = false
+	}
+
+	return result
+}
+
 // call per sample
 func outputJobFile(s *Sample, rss *ReferenceSchema) (string, error) {
 	//
@@ -272,7 +363,7 @@ func IsExistsWorkflowFile(workflowFilePath string) bool {
 	return true
 }
 
-func DisplayJobManagerRecoginition(workflowFilePath string) {
+func DisplayJobManagerRecoginition(rss *ReferenceSchema) {
 	//fmt.Printf("Workflow file is exists [%t]\n", isExistsWorkflowFile(workflowFilePath))
 	fmt.Printf("toil-cwl-runner is exists [%t]\n", IsExistsToilCWLRunner())
 	fmt.Printf("Using Virtualenv if true set TOIL_CHECK_ENV=True [%t]\n", IsInVirtualenv())
@@ -281,6 +372,12 @@ func DisplayJobManagerRecoginition(workflowFilePath string) {
 	fmt.Printf("  Using Conda virtual env [%t]\n", IsInCondaEnv())
 	fmt.Printf("sbatch(slurm) is exists [%t]\n", IsExistsSbatch())
 	fmt.Printf("singularity is exists [%t]\n", IsExistsSingularity())
+	result := CheckAndDisplayFilesForExecute(rss)
+	if result {
+		fmt.Println("All files for workflow Execution are found.")
+	} else {
+		fmt.Println("Some files for workflow Execution are missing.")
+	}
 }
 
 //
