@@ -16,6 +16,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/manabuishiii/jgaworkflowspecchecker/cmd"
+
 	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/sync/errgroup"
 
@@ -82,13 +84,6 @@ type referenceSchema struct {
 	HaplotypecallerChrYNonPARIntervalBed   *PathObject     `json:"haplotypecaller_chrY_nonPAR_interval_bed"`
 	HaplotypecallerChrYNonPARIntervalList  *PathOnlyObject `json:"haplotypecaller_chrY_nonPAR_interval_list"`
 }
-
-// nolint: gochecknoglobals
-var (
-	version  = "dev"
-	revision = ""
-	date     = ""
-)
 
 //
 
@@ -466,11 +461,6 @@ func createToilCwlRunnerArguments(outputDirectoryPath string, sampleId string, w
 	return commandArgs
 }
 
-func buildVersionString(version, revision, date string) string {
-	result := fmt.Sprintf("Version: %s-%s (built at %s)\n", version, revision, date)
-	return result
-}
-
 func isExistsToilCWLRunner() bool {
 	_, err := exec.LookPath("toil-cwl-runner")
 	return err == nil
@@ -545,6 +535,10 @@ var fileHashCheckFlag bool
 var displayJobManagerRecoginitionFlag bool
 
 func main() {
+	cmd.Execute()
+}
+
+func main2() {
 	flag.BoolVarP(&dryrunFlag, "dry-run", "n", false, "Dry-run, do not execute acutal command")
 	flag.BoolVarP(&helpFlag, "help", "h", false, "Show help message")
 	flag.BoolVarP(&versionFlag, "version", "v", false, "Show version")
@@ -554,12 +548,11 @@ func main() {
 	flag.Parse()
 
 	if helpFlag {
-		fmt.Printf(buildVersionString(version, revision, date))
 		flag.PrintDefaults()
 		return
 	}
 	if versionFlag {
-		fmt.Printf(buildVersionString(version, revision, date))
+		//utils.displayVersionString()
 		return
 	}
 
