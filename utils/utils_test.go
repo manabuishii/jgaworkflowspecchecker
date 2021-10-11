@@ -26,22 +26,22 @@ func Test_getFileNameWithoutExtension_2ext(t *testing.T) {
 
 }
 
-func Test_checkSecondaryFilesExists_all_files_exists(t *testing.T) {
-	result, _ := checkSecondaryFilesExists("../test/secondaryfile/case1/case1.fasta")
+func Test_CheckSecondaryFilesExists_all_files_exists(t *testing.T) {
+	result, _ := CheckSecondaryFilesExists("../test/secondaryfile/case1/case1.fasta")
 
 	assert.True(t, result, "Check all secondary file")
 
 }
 
-func Test_checkSecondaryFilesExists_missing_pac_file(t *testing.T) {
-	result, _ := checkSecondaryFilesExists("../test/secondaryfile/case2/case2.fasta")
+func Test_CheckSecondaryFilesExists_missing_pac_file(t *testing.T) {
+	result, _ := CheckSecondaryFilesExists("../test/secondaryfile/case2/case2.fasta")
 
 	assert.False(t, result, "pac file is missing so expected false")
 
 }
 
-func Test_checkSecondaryFilesExists_missing_dict_file(t *testing.T) {
-	result, _ := checkSecondaryFilesExists("../test/secondaryfile/case3/case3.fasta")
+func Test_CheckSecondaryFilesExists_missing_dict_file(t *testing.T) {
+	result, _ := CheckSecondaryFilesExists("../test/secondaryfile/case3/case3.fasta")
 
 	assert.False(t, result, "^.dict file is missing so expected false")
 
@@ -64,38 +64,38 @@ func Test_checkRunDataFile_fail(t *testing.T) {
 
 }
 
-func Test_isExistsAllResultFilesPrefixSampleId_success(t *testing.T) {
-	result := isExistsAllResultFilesPrefixSampleId("../test/resultfile/success", "XX00000")
+func Test_IsExistsAllResultFilesPrefixSampleId_success(t *testing.T) {
+	result := IsExistsAllResultFilesPrefixSampleId("../test/resultfile/success", "XX00000")
 
 	assert.True(t, result, "All files MUST be exists")
 
 }
 
-func Test_isExistsAllResultFilesPrefixSampleId_missing_crai(t *testing.T) {
+func Test_IsExistsAllResultFilesPrefixSampleId_missing_crai(t *testing.T) {
 	// XX00000.cram.crai is missing
-	result := isExistsAllResultFilesPrefixSampleId("../test/resultfile/fail", "XX00000")
+	result := IsExistsAllResultFilesPrefixSampleId("../test/resultfile/fail", "XX00000")
 
 	assert.False(t, result, "XX00000.cram.crai is missing")
 
 }
 
-func Test_isExistsAllResultFilesPrefixSampleId_filesize_zero(t *testing.T) {
+func Test_IsExistsAllResultFilesPrefixSampleId_filesize_zero(t *testing.T) {
 	// XX00000.cram.crai is missing
-	result := isExistsAllResultFilesPrefixSampleId("../test/resultfile/filesizezero", "XX00000")
+	result := IsExistsAllResultFilesPrefixSampleId("../test/resultfile/filesizezero", "XX00000")
 
 	assert.False(t, result, "XX00000.cram.crai is missing")
 
 }
 
-func Test_isExistsAllResultFilesPrefixRunId_success(t *testing.T) {
-	result := isExistsAllResultFilesPrefixRunId("../test/resultfile/success/XX00000", "YYY0000000")
+func Test_IsExistsAllResultFilesPrefixRunId_success(t *testing.T) {
+	result := IsExistsAllResultFilesPrefixRunId("../test/resultfile/success/XX00000", "YYY0000000")
 
 	assert.True(t, result, "All files MUST be exists")
 
 }
 
-func Test_isExistsAllResultFilesPrefixRunId_fail_runid_bam(t *testing.T) {
-	result := isExistsAllResultFilesPrefixRunId("../test/resultfile/fail_runid_bam/XX00000", "YYY0000000")
+func Test_IsExistsAllResultFilesPrefixRunId_fail_runid_bam(t *testing.T) {
+	result := IsExistsAllResultFilesPrefixRunId("../test/resultfile/fail_runid_bam/XX00000", "YYY0000000")
 
 	assert.False(t, result, "YYY0000000.bam is missing")
 

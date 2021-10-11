@@ -17,11 +17,13 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
-	"path/filepath"
 
+	"github.com/manabuishiii/jgaworkflowspecchecker/utils"
 	"github.com/spf13/cobra"
-	"github.com/xeipuuv/gojsonschema"
+	"golang.org/x/sync/errgroup"
 )
 
 //
@@ -40,8 +42,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("run called")
-		fmt.Printf("[%t]\n", dryrunFlag)
+		runmain(args)
 	},
 }
 
@@ -63,103 +64,10 @@ func init() {
 
 }
 
-func runmain() {
-	path, err := filepath.Abs("./")
+func runmain(args []string) {
+	loadSampleSheetAndConfigFile(args)
 
-	// MUST must be canonical
-	schemaLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + os.Args[1])
-	// MUST must be canonical
-	documentLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + os.Args[2])
-
-	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
-	if err != nil {
-		panic(err.Error())
-	}
-	if result.Valid() {
-		fmt.Printf("The document is valid\n")
-	} else {
-		fmt.Printf("The document is not valid. see errors :\n")
-		for _, desc := range result.Errors() {
-			fmt.Printf("- %s\n", desc)
-		}
-	}
-
-}
-
-/*
-
-	fmt.Println("Load sample")
-	raw, err := ioutil.ReadFile(os.Args[2])
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	var ss simpleSchema
-
-	json.Unmarshal(raw, &ss)
-	fmt.Println("Load end")
-
-	// validate
-	checkResult := false
-	for _, s := range ss.SampleList {
-		//fmt.Printf("Check index: %d, SampleId: %s\n", i, s.SampleId)
-		for j, t := range s.RunList {
-			r1, _ := checkRunData(&t.RunData)
-			checkResult = checkResult || r1
-			if !r1 {
-				fmt.Println("Some error found. Not exist or Hash value error")
-				fmt.Printf("Check index: %d, RunId: %s\n", j, t.RunId)
-				fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
-				fmt.Printf("fq1: [%s]\n", t.RunData.FQ1)
-				fmt.Printf("fq2: [%s]\n", t.RunData.FQ2)
-				fmt.Printf("result=%t\n", r1)
-			}
-		}
-	}
-	if !checkResult {
-		fmt.Println("some thing wrong. do not execute")
-		return
-	}
-	// reference config validate
-
-	// MUST must be canonical
-	rschemaLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + os.Args[3])
-	// MUST must be canonical
-	rdocumentLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + os.Args[4])
-
-	rresult, err := gojsonschema.Validate(rschemaLoader, rdocumentLoader)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	if rresult.Valid() {
-		fmt.Printf("The reference config document is valid\n")
-	} else {
-		fmt.Printf("The reference config document is not valid. see errors :\n")
-		for _, desc := range rresult.Errors() {
-			fmt.Printf("- %s\n", desc)
-		}
-		return
-	}
-	fmt.Println("Load sample")
-	rraw, err := ioutil.ReadFile(os.Args[4])
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	var rss referenceSchema
-
-	json.Unmarshal(rraw, &rss)
-	fmt.Println("Load end")
-
-	// if dryrunFlag {
-	// 	fmt.Println("Dry-run flag is set")
-	// 	return
-	// }
-	//
-	secondaryFilesCheck, err := checkSecondaryFilesExists(rss.Reference.Path)
+	secondaryFilesCheck, _ := utils.CheckSecondaryFilesExists(rss.Reference.Path)
 	if !secondaryFilesCheck {
 		fmt.Println("Some secondary file is missing")
 		return
@@ -173,7 +81,6 @@ func runmain() {
 		fmt.Printf("Missing workflow file [%s]\n", workflowFilePath)
 		os.Exit(1)
 	}
-
 	// Set output directory path
 	outputDirectoryPath := rss.OutputDirectory.Path
 	// Create output directory
@@ -183,6 +90,7 @@ func runmain() {
 		fmt.Println("cannot create output directory")
 		return
 	}
+
 	if err := os.MkdirAll(outputDirectoryPath+"/toil-outputs", 0755); err != nil {
 		fmt.Println(err)
 		fmt.Println("cannot create toil outputs directory")
@@ -198,6 +106,7 @@ func runmain() {
 		fmt.Println("cannot create jobstores directory")
 		return
 	}
+
 	// copy sample_sheet file
 	original_sample_sheet, err := os.Open(os.Args[2])
 	if err != nil {
@@ -213,6 +122,7 @@ func runmain() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	// copy config file
 	original_configfile, err := os.Open(os.Args[4])
 	if err != nil {
@@ -230,7 +140,7 @@ func runmain() {
 	}
 
 	// create job file for CWL
-	createJobFile(&ss, &rss)
+	utils.CreateJobFile(&ss, &rss)
 
 	// check toil-cwl-runner is exists or not
 	foundToilCWLRunner := utils.IsExistsToilCWLRunner()
@@ -250,13 +160,13 @@ func runmain() {
 		} else {
 			// check all result file is found or not
 			// SampleId prefix files check
-			check1 := isExistsAllResultFilesPrefixSampleId(outputDirectoryPath, s.SampleId)
+			check1 := utils.IsExistsAllResultFilesPrefixSampleId(outputDirectoryPath, s.SampleId)
 			if !check1 {
 				isExecute = true
 			}
 			// RunID prefix files check
 			for _, r := range s.RunList {
-				check2 := isExistsAllResultFilesPrefixRunId(outputDirectoryPath+"/"+s.SampleId, r.RunId)
+				check2 := utils.IsExistsAllResultFilesPrefixRunId(outputDirectoryPath+"/"+s.SampleId, r.RunId)
 				if !check2 {
 					isExecute = true
 				}
@@ -265,43 +175,28 @@ func runmain() {
 		}
 		if isExecute {
 			executeCount += 1
-
-			fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, s.SampleId)
 			sampleId := s.SampleId
+
+			fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, sampleId)
 			if !dryrunFlag {
 				// TODO exec real
-				// if foundToilCWLRunner {
-				// 	// only exec when toil-cwl-runner is found
-				// 	eg.Go(func() error {
-				// 		execCWL(outputDirectoryPath, workflowFilePath, sampleId)
-				// 		return nil
-				// 	})
-				// }
+				if foundToilCWLRunner {
+					// only exec when toil-cwl-runner is found
+					eg.Go(func() error {
+						utils.ExecCWL(outputDirectoryPath, workflowFilePath, sampleId)
+						return nil
+					})
+				}
 			}
 		}
 	}
 	if dryrunFlag {
 		fmt.Printf("[%d/%d] task will be executed.\n", executeCount, len(ss.SampleList))
 	}
-
-	// for i, s := range ss.SampleList {
-	// 	fmt.Printf("index: %d, SampleId: %s\n", i, s.SampleId)
-	// 	sampleId := s.SampleId
-	// 	eg.Go(func() error {
-	// 		// TODO check exit status
-	// 		execCWL(outputDirectoryPath, workflowFilePath, sampleId)
-	// 		return nil
-	// 	})
-	// }
-
 	if err := eg.Wait(); err != nil {
 		log.Fatal(err)
-	}
-	if foundToilCWLRunner {
-		fmt.Println("Can not find toil-cwl-runner")
 	}
 
 	fmt.Println("fin")
 
 }
-*/

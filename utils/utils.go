@@ -34,7 +34,7 @@ type Sample struct {
 	RunList  []*Run `json:"runlist"`
 }
 
-type simpleSchema struct {
+type SimpleSchema struct {
 	Name string `json:"name"`
 
 	SampleList []*Sample `json:"samplelist"`
@@ -51,7 +51,7 @@ type PathOnlyObject struct {
 	Path string `json:"path"`
 }
 
-type referenceSchema struct {
+type ReferenceSchema struct {
 	WorkflowFile                           *PathOnlyObject `json:"workflow_file"`
 	OutputDirectory                        *PathOnlyObject `json:"output_directory"`
 	Reference                              *PathObject     `json:"reference"`
@@ -74,7 +74,7 @@ type referenceSchema struct {
 	HaplotypecallerChrYNonPARIntervalList  *PathOnlyObject `json:"haplotypecaller_chrY_nonPAR_interval_list"`
 }
 
-func outputReference(rss *referenceSchema) (string, error) {
+func outputReference(rss *ReferenceSchema) (string, error) {
 	var byteBuf bytes.Buffer
 	byteBuf.WriteString("")
 	byteBuf.WriteString("reference:\n")
@@ -127,7 +127,7 @@ func outputReference(rss *referenceSchema) (string, error) {
 }
 
 // call per sample
-func outputJobFile(s *Sample, rss *referenceSchema) (string, error) {
+func outputJobFile(s *Sample, rss *ReferenceSchema) (string, error) {
 	//
 	var byteBuf bytes.Buffer
 
@@ -184,7 +184,7 @@ func outputJobFile(s *Sample, rss *referenceSchema) (string, error) {
 	return byteBuf.String(), nil
 }
 
-func createJobFile(ss *simpleSchema, rss *referenceSchema) error {
+func CreateJobFile(ss *SimpleSchema, rss *ReferenceSchema) error {
 	for _, s := range ss.SampleList {
 		// create file
 		//
@@ -319,6 +319,19 @@ func CheckRunData(runData *RunData, fileExistsCheckFlag bool, fileHashCheckFlag 
 	return result, nil
 }
 
+/*
+ Check file is exists
+ Return value:
+  true  is exists
+  false is not found
+*/
+func IsExistsFile(fn string) bool {
+	// Check file is exist
+	if _, err := os.Stat(fn); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
 func CheckRunDataFile(fn string, fnmd5 string, fileExistsCheckFlag bool, fileHashCheckFlag bool) (bool, error) {
 	// Check file existance flag is set
 	if fileExistsCheckFlag == false {
@@ -346,7 +359,7 @@ func CheckRunDataFile(fn string, fnmd5 string, fileExistsCheckFlag bool, fileHas
 	return result, nil
 }
 
-func isExistsAllResultFilesPrefixRunId(outputDirectoryPath string, runId string) bool {
+func IsExistsAllResultFilesPrefixRunId(outputDirectoryPath string, runId string) bool {
 	result := true
 	fn := filepath.Join(outputDirectoryPath, runId)
 	for _, extension := range []string{".bam", ".bam.log"} {
@@ -358,7 +371,7 @@ func isExistsAllResultFilesPrefixRunId(outputDirectoryPath string, runId string)
 	}
 	return result
 }
-func isExistsAllResultFilesPrefixSampleId(outputDirectoryPath string, sampleId string) bool {
+func IsExistsAllResultFilesPrefixSampleId(outputDirectoryPath string, sampleId string) bool {
 	result := true
 	fn := filepath.Join(outputDirectoryPath, sampleId)
 	for _, extension := range []string{".autosome_PAR_ploidy_2.g.vcf.gz",
@@ -434,7 +447,7 @@ func getFileNameWithoutExtension(path string) string {
 	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
 }
 
-func checkSecondaryFilesExists(fn string) (bool, error) {
+func CheckSecondaryFilesExists(fn string) (bool, error) {
 	// true is exist all files
 	// false is some secodary files missing
 	result := true
@@ -454,7 +467,7 @@ func checkSecondaryFilesExists(fn string) (bool, error) {
 	return result, nil
 }
 
-func execCWL(outputDirectoryPath string, workflowFilePath string, sampleId string) string {
+func ExecCWL(outputDirectoryPath string, workflowFilePath string, sampleId string) string {
 	// execute toil
 	//p, _ := os.Getwd()
 	// c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
