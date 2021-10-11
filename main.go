@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/manabuishiii/jgaworkflowspecchecker/cmd"
+	"github.com/manabuishiii/jgaworkflowspecchecker/utils"
 
 	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/sync/errgroup"
@@ -461,78 +462,11 @@ func createToilCwlRunnerArguments(outputDirectoryPath string, sampleId string, w
 	return commandArgs
 }
 
-func isExistsToilCWLRunner() bool {
-	_, err := exec.LookPath("toil-cwl-runner")
-	return err == nil
-}
-
-func isExistsSbatch() bool {
-	_, err := exec.LookPath("sbatch")
-	return err == nil
-}
-
-func isExistsSingularity() bool {
-	_, err := exec.LookPath("singularity")
-	return err == nil
-}
-
-func isInVirtualenv() bool {
-	result := false
-	result = result || isInPythonVirtualenv()
-	result = result || isInCondaEnv()
-	return result
-}
-
-func isInCondaEnv() bool {
-	result := false
-	condavenv := os.Getenv("CONDA_DEFAULT_ENV")
-	if condavenv != "" {
-		result = true
-	}
-	return result
-}
-
-func isInPythonVirtualenv() bool {
-	result := false
-	venv := os.Getenv("VIRTUAL_ENV")
-	if venv != "" {
-		result = true
-	}
-	return result
-}
-
-func displayJobManagerRecoginition(workflowFilePath string) {
-	fmt.Printf("Workflow file is exists [%t]\n", isExistsWorkflowFile(workflowFilePath))
-	fmt.Printf("toil-cwl-runner is exists [%t]\n", isExistsToilCWLRunner())
-	fmt.Printf("Using Virtualenv if true set TOIL_CHECK_ENV=True [%t]\n", isInVirtualenv())
-
-	fmt.Printf("  Using Python virtualenv [%t]\n", isInPythonVirtualenv())
-	fmt.Printf("  Using Conda virtual env [%t]\n", isInCondaEnv())
-	fmt.Printf("sbatch(slurm) is exists [%t]\n", isExistsSbatch())
-	fmt.Printf("singularity is exists [%t]\n", isExistsSingularity())
-}
-
-/*
-  Check whether workflow path is exists .
-  MEMO: Path starts http:// or https:// , do not check.
-*/
-func isExistsWorkflowFile(workflowFilePath string) bool {
-	if !strings.HasPrefix(workflowFilePath, "http://") {
-		if !strings.HasPrefix(workflowFilePath, "https://") {
-			if _, err := os.Stat(workflowFilePath); os.IsNotExist(err) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
 var dryrunFlag bool
 var helpFlag bool
 var versionFlag bool
 var fileExistsCheckFlag bool
 var fileHashCheckFlag bool
-var displayJobManagerRecoginitionFlag bool
 
 func main() {
 	cmd.Execute()
@@ -544,7 +478,6 @@ func main2() {
 	flag.BoolVarP(&versionFlag, "version", "v", false, "Show version")
 	flag.BoolVarP(&fileExistsCheckFlag, "file-exists-check", "", true, "Check file exists")
 	flag.BoolVarP(&fileHashCheckFlag, "file-hash-check", "", true, "Check file hash value")
-	flag.BoolVarP(&displayJobManagerRecoginitionFlag, "display-jobmanager-recognition", "", true, "Display JobManager Recognition")
 	flag.Parse()
 
 	if helpFlag {
@@ -657,14 +590,9 @@ func main2() {
 
 	// Set output directory path
 	workflowFilePath := rss.WorkflowFile.Path
-	// display
-	if displayJobManagerRecoginitionFlag {
-		displayJobManagerRecoginition(workflowFilePath)
-		return
-	}
 
 	// currently check local filesystem only
-	if !isExistsWorkflowFile(workflowFilePath) {
+	if !utils.IsExistsWorkflowFile(workflowFilePath) {
 		fmt.Printf("Missing workflow file [%s]\n", workflowFilePath)
 		os.Exit(1)
 	}
@@ -728,7 +656,7 @@ func main2() {
 	createJobFile(&ss, &rss)
 
 	// check toil-cwl-runner is exists or not
-	foundToilCWLRunner := isExistsToilCWLRunner()
+	foundToilCWLRunner := utils.IsExistsToilCWLRunner()
 
 	// dry-run
 
