@@ -24,9 +24,9 @@ import (
 
 // nolint: gochecknoglobals
 var (
-	Version  = "dev3"
-	Revision = "rev3"
-	Date     = "date3"
+	Version  = "dev"
+	Revision = ""
+	Date     = ""
 )
 
 // versionCmd represents the version command
