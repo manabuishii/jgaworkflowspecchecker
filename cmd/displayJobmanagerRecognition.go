@@ -36,6 +36,7 @@ Slurm command
 		// TODO resolv workflow path
 		loadSampleSheetAndConfigFile(args)
 		utils.DisplayJobManagerRecoginition(&rss)
+		utils.CheckSampleSheetFiles(&ss, fileExistsCheckFlag, fileHashCheckFlag)
 	},
 }
 

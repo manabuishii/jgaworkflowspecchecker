@@ -217,6 +217,33 @@ func CheckAndDisplayFilesForExecute(rss *ReferenceSchema) bool {
 	return result
 }
 
+/*
+ * return value: true is fine
+ */
+func CheckSampleSheetFiles(ss *SimpleSchema, fileExistsCheckFlag bool, fileHashCheckFlag bool) bool {
+	checkResult := true
+	for _, s := range ss.SampleList {
+		//fmt.Printf("Check index: %d, SampleId: %s\n", i, s.SampleId)
+		for j, t := range s.RunList {
+			r1, _ := CheckRunData(&t.RunData, fileExistsCheckFlag, fileHashCheckFlag)
+			checkResult = checkResult && r1
+			if !r1 {
+				fmt.Println("At sample sheet check. Some error found. Sample Not exist or Hash value error")
+				fmt.Printf("Check index: %d, RunId: %s\n", j, t.RunId)
+				fmt.Printf("pe or se: [%s]\n", t.RunData.PEOrSE)
+				fmt.Printf("fq1: [%s]\n", t.RunData.FQ1)
+				fmt.Printf("fq2: [%s]\n", t.RunData.FQ2)
+				fmt.Printf("result=%t\n", r1)
+			}
+		}
+	}
+	if !checkResult {
+		fmt.Println("some thing wrong. do not execute")
+		//return
+	}
+	return checkResult
+}
+
 // call per sample
 func outputJobFile(s *Sample, rss *ReferenceSchema) (string, error) {
 	//
