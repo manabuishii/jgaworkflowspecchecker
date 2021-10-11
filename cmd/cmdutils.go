@@ -13,6 +13,11 @@ import (
 
 //
 func loadSampleSheetAndConfigFile(args []string) {
+	if len(args) != 4 {
+		fmt.Println("Some required files are not specified.")
+		fmt.Println("samplesheet_schema samplesheet_data configfile_schema configfile_data")
+		os.Exit(1)
+	}
 	path, _ := filepath.Abs("./")
 	samplesheet_schema_file := args[0]
 	samplesheet_data_file := args[1]
