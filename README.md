@@ -15,13 +15,13 @@ GO111MODULE=on
 ### Simply test
 
 ```
-go test
+go test ./...
 ```
 
 ### Coverage
 
 ```
-go test -race -coverprofile=coverage.txt -covermode=atomic 
+go test ./... -race -coverprofile=coverage.txt -covermode=atomic 
 go tool cover -html=coverage.txt -o cover.html
 ```
 
