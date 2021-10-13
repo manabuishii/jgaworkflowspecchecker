@@ -52,20 +52,18 @@ type PathOnlyObject struct {
 }
 
 type ReferenceSchema struct {
-	WorkflowFile                           *PathOnlyObject `json:"workflow_file"`
-	OutputDirectory                        *PathOnlyObject `json:"output_directory"`
-	Reference                              *PathObject     `json:"reference"`
-	SortsamMaxRecordsInRam                 int             `json:"sortsam_max_records_in_ram"`
-	SortsamJavaOptions                     string          `json:"sortsam_java_options"`
-	BwaNumThreads                          int             `json:"bwa_num_threads"`
+	WorkflowFile           *PathOnlyObject `json:"workflow_file"`
+	OutputDirectory        *PathOnlyObject `json:"output_directory"`
+	Reference              *PathObject     `json:"reference"`
+	SortsamMaxRecordsInRam int             `json:"sortsam_max_records_in_ram"`
+	SortsamJavaOptions     string          `json:"sortsam_java_options"`
+	Cores                  int             `json:"cores"`
+
 	BwaBasesPerBatch                       int             `json:"bwa_bases_per_batch"`
 	UseBqsr                                bool            `json:"use_bqsr"`
 	Dbsnp                                  *PathObject     `json:"dbsnp"`
 	Mills                                  *PathObject     `json:"mills"`
 	KnownIndels                            *PathObject     `json:"known_indels"`
-	SamtoolsNumThreads                     int             `json:"samtools_num_threads"`
-	Gatk4HaplotypeCallerNumThreads         int             `json:"gatk4_HaplotypeCaller_num_threads"`
-	BgzipNumThreads                        int             `json:"bgzip_num_threads"`
 	HaplotypecallerAutosomePARIntervalBed  *PathObject     `json:"haplotypecaller_autosome_PAR_interval_bed"`
 	HaplotypecallerAutosomePARIntervalList *PathOnlyObject `json:"haplotypecaller_autosome_PAR_interval_list"`
 	HaplotypecallerChrXNonPARIntervalBed   *PathObject     `json:"haplotypecaller_chrX_nonPAR_interval_bed"`
@@ -83,7 +81,7 @@ func outputReference(rss *ReferenceSchema) (string, error) {
 	byteBuf.WriteString("  format: http://edamontology.org/format_1929\n")
 	byteBuf.WriteString(fmt.Sprintf("sortsam_max_records_in_ram: %d\n", rss.SortsamMaxRecordsInRam))
 	byteBuf.WriteString(fmt.Sprintf("sortsam_java_options: %s\n", rss.SortsamJavaOptions))
-	byteBuf.WriteString(fmt.Sprintf("bwa_num_threads: %d\n", rss.BwaNumThreads))
+	byteBuf.WriteString(fmt.Sprintf("cores: %d\n", rss.Cores))
 	byteBuf.WriteString(fmt.Sprintf("bwa_bases_per_batch: %d\n", rss.BwaBasesPerBatch))
 	byteBuf.WriteString(fmt.Sprintf("use_bqsr: %t\n", rss.UseBqsr))
 	byteBuf.WriteString("dbsnp:\n")
@@ -98,9 +96,6 @@ func outputReference(rss *ReferenceSchema) (string, error) {
 	byteBuf.WriteString("  class: File\n")
 	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.KnownIndels.Path))
 	byteBuf.WriteString("  format: http://edamontology.org/format_3016\n")
-	byteBuf.WriteString(fmt.Sprintf("samtools_num_threads: %d\n", rss.SamtoolsNumThreads))
-	byteBuf.WriteString(fmt.Sprintf("gatk4_HaplotypeCaller_num_threads: %d\n", rss.Gatk4HaplotypeCallerNumThreads))
-	byteBuf.WriteString(fmt.Sprintf("bgzip_num_threads: %d\n", rss.BgzipNumThreads))
 	byteBuf.WriteString("haplotypecaller_autosome_PAR_interval_bed:\n")
 	byteBuf.WriteString("  class: File\n")
 	byteBuf.WriteString(fmt.Sprintf("  path: %s\n", rss.HaplotypecallerAutosomePARIntervalBed.Path))
