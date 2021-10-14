@@ -22,27 +22,17 @@ var configfileBytes []byte
 //print(loader)
 //
 func loadSampleSheetAndConfigFile(args []string) {
-	if len(args) != 4 {
+	if len(args) != 2 {
 		fmt.Println("Some required files are not specified.")
 		fmt.Println("samplesheet_schema samplesheet_data configfile_schema configfile_data")
 		os.Exit(1)
 	}
 	path, _ := filepath.Abs("./")
-	samplesheet_schema_file := args[0]
-	samplesheet_data_file := args[1]
-	config_schema_file := args[2]
-	config_data_file := args[3]
+	samplesheet_data_file := args[0]
+	config_data_file := args[1]
 	allfileexist := true
-	if !utils.IsExistsFile(samplesheet_schema_file) {
-		fmt.Printf("[%s] is missing\n", samplesheet_schema_file)
-		allfileexist = false
-	}
 	if !utils.IsExistsFile(samplesheet_data_file) {
 		fmt.Printf("[%s] is missing\n", samplesheet_data_file)
-		allfileexist = false
-	}
-	if !utils.IsExistsFile(config_schema_file) {
-		fmt.Printf("[%s] is missing\n", config_schema_file)
 		allfileexist = false
 	}
 	if !utils.IsExistsFile(config_data_file) {
