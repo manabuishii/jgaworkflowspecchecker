@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +12,14 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+//go:embed samplesheet_schema.json
+var samplesheetfileBytes []byte
+
+//go:embed configfile_schema.json
+var configfileBytes []byte
+
+//_ :=
+//print(loader)
 //
 func loadSampleSheetAndConfigFile(args []string) {
 	if len(args) != 4 {
@@ -46,7 +55,7 @@ func loadSampleSheetAndConfigFile(args []string) {
 	}
 
 	// MUST must be canonical
-	schemaLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + samplesheet_schema_file)
+	schemaLoader := gojsonschema.NewStringLoader(string(samplesheetfileBytes))
 	// MUST must be canonical
 	documentLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + samplesheet_data_file)
 
@@ -72,8 +81,8 @@ func loadSampleSheetAndConfigFile(args []string) {
 	json.Unmarshal(raw, &ss)
 	fmt.Println("Load sample sheet end")
 
-	// MUST must be canonical
-	rschemaLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + config_schema_file)
+	// configfile loader strings are embed variable
+	rschemaLoader := gojsonschema.NewStringLoader(string(configfileBytes))
 	// MUST must be canonical
 	rdocumentLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + config_data_file)
 
