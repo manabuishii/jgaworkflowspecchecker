@@ -18,38 +18,39 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/manabuishiii/jgaworkflowspecchecker/utils"
 	"github.com/spf13/cobra"
 )
 
-// displayJobmanagerRecognitionCmd represents the displayJobmanagerRecognition command
-var displayJobmanagerRecognitionCmd = &cobra.Command{
-	Use:   "display-jobmanager-recognition",
-	Short: "Display JobManager Recognition",
-	Long: `Display JobManager Recognition
-Virutlenv state
-Singularity command
-Slurm command
-`,
+// generateSampleListCmd represents the generateSampleList command
+var generateSampleListCmd = &cobra.Command{
+	Use:   "generate-sample-list",
+	Short: "Generate sample list",
+	Long:  `Generate sample list from samplesheet file.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("displayJobmanagerRecognition called")
-		// TODO resolv workflow path
-		loadSampleSheetAndConfigFile(args)
-		utils.DisplayJobManagerRecoginition(&rss)
-		utils.CheckSampleSheetFiles(&ss, fileExistsCheckFlag, fileHashCheckFlag, displayMeesage)
+		generateSampleListMain(args)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(displayJobmanagerRecognitionCmd)
+	rootCmd.AddCommand(generateSampleListCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// displayJobmanagerRecognitionCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// generateSampleListCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// displayJobmanagerRecognitionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// generateSampleListCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func generateSampleListMain(args []string) {
+	// load SampleSheet and ConfigFile
+	loadSampleSheetAndConfigFile(args)
+	//
+	for _, s := range ss.SampleList {
+		sampleId := s.SampleId
+		fmt.Printf("%s\n", sampleId)
+	}
 }

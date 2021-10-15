@@ -18,7 +18,11 @@ var samplesheetfileBytes []byte
 //go:embed configfile_schema.json
 var configfileBytes []byte
 
-//
+/*
+ * Behavior:
+ *   All fine: return
+ *   Something wrong: exit program
+ */
 func loadSampleSheetAndConfigFile(args []string) {
 	if len(args) != 2 {
 		fmt.Println("Some required files are not specified.")
@@ -52,14 +56,18 @@ func loadSampleSheetAndConfigFile(args []string) {
 		panic(err.Error())
 	}
 	if result.Valid() {
-		fmt.Printf("The sample sheet document is valid\n")
+		if displayMeesage {
+			fmt.Printf("The sample sheet document is valid\n")
+		}
 	} else {
 		fmt.Printf("The sample sheet document is not valid. see errors :\n")
 		for _, desc := range result.Errors() {
 			fmt.Printf("- %s\n", desc)
 		}
 	}
-	fmt.Println("Load sample sheet")
+	if displayMeesage {
+		fmt.Println("Load sample sheet")
+	}
 	raw, err := ioutil.ReadFile(samplesheet_data_file)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -67,8 +75,9 @@ func loadSampleSheetAndConfigFile(args []string) {
 	}
 
 	json.Unmarshal(raw, &ss)
-	fmt.Println("Load sample sheet end")
-
+	if displayMeesage {
+		fmt.Println("Load sample sheet end")
+	}
 	// configfile loader strings are embed variable
 	rschemaLoader := gojsonschema.NewStringLoader(string(configfileBytes))
 	// MUST must be canonical
@@ -80,7 +89,9 @@ func loadSampleSheetAndConfigFile(args []string) {
 	}
 
 	if rresult.Valid() {
-		fmt.Printf("The reference config document is valid\n")
+		if displayMeesage {
+			fmt.Printf("The reference config document is valid\n")
+		}
 	} else {
 		fmt.Printf("The reference config document is not valid. see errors :\n")
 		for _, desc := range rresult.Errors() {
@@ -88,7 +99,9 @@ func loadSampleSheetAndConfigFile(args []string) {
 		}
 		return
 	}
-	fmt.Println("Load config file")
+	if displayMeesage {
+		fmt.Println("Load config file")
+	}
 	rraw, err := ioutil.ReadFile(config_data_file)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -96,9 +109,11 @@ func loadSampleSheetAndConfigFile(args []string) {
 	}
 
 	json.Unmarshal(rraw, &rss)
-	fmt.Println("Load config file end")
+	if displayMeesage {
+		fmt.Println("Load config file end")
+	}
 	// files in sample sheet
-	if !utils.CheckSampleSheetFiles(&ss, fileExistsCheckFlag, fileHashCheckFlag) {
+	if !utils.CheckSampleSheetFiles(&ss, fileExistsCheckFlag, fileHashCheckFlag, displayMeesage) {
 		fmt.Println("Some files in sample sheet are missing.")
 		os.Exit(1)
 	}

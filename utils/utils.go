@@ -215,7 +215,7 @@ func CheckAndDisplayFilesForExecute(rss *ReferenceSchema) bool {
 /*
  * return value: true is fine
  */
-func CheckSampleSheetFiles(ss *SimpleSchema, fileExistsCheckFlag bool, fileHashCheckFlag bool) bool {
+func CheckSampleSheetFiles(ss *SimpleSchema, fileExistsCheckFlag bool, fileHashCheckFlag bool, displayMeesage bool) bool {
 	checkResult := true
 	for _, s := range ss.SampleList {
 		//fmt.Printf("Check index: %d, SampleId: %s\n", i, s.SampleId)
