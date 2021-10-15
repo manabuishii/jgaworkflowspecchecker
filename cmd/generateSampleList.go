@@ -17,8 +17,10 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 // generateSampleListCmd represents the generateSampleList command
@@ -48,9 +50,17 @@ func init() {
 func generateSampleListMain(args []string) {
 	// load SampleSheet and ConfigFile
 	loadSampleSheetAndConfigFile(args)
-	//
+	// Create SampleID List
+	sampleIdList := []string{}
 	for _, s := range ss.SampleList {
 		sampleId := s.SampleId
-		fmt.Printf("%s\n", sampleId)
+		sampleIdList = append(sampleIdList, sampleId)
 	}
+	// output
+	d, err := yaml.Marshal(&sampleIdList)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	fmt.Printf("%s", string(d))
+
 }
