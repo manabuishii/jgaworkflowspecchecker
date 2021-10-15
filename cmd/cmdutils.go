@@ -44,8 +44,9 @@ func loadSampleSheetAndConfigFile(args []string) bool {
 		fmt.Println("Some required files are missing. So stop execute")
 		return false
 	}
-
-	// MUST must be canonical
+	// files are provided. check both files contents.
+	validateisfine := true
+	// sample sheet schema provided by embed.
 	schemaLoader := gojsonschema.NewStringLoader(string(samplesheetfileBytes))
 	// MUST must be canonical
 	documentLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + samplesheet_data_file)
@@ -63,6 +64,7 @@ func loadSampleSheetAndConfigFile(args []string) bool {
 		for _, desc := range result.Errors() {
 			fmt.Printf("- %s\n", desc)
 		}
+		validateisfine = false
 	}
 	if displayMeesage {
 		fmt.Println("Load sample sheet")
@@ -71,7 +73,7 @@ func loadSampleSheetAndConfigFile(args []string) bool {
 	if err != nil {
 		fmt.Println("Samplesheet has some problems")
 		fmt.Println(err.Error())
-		return false
+		validateisfine = false
 	}
 
 	json.Unmarshal(raw, &ss)
@@ -97,7 +99,7 @@ func loadSampleSheetAndConfigFile(args []string) bool {
 		for _, desc := range rresult.Errors() {
 			fmt.Printf("- %s\n", desc)
 		}
-		return false
+		validateisfine = false
 	}
 	if displayMeesage {
 		fmt.Println("Load config file")
@@ -106,12 +108,12 @@ func loadSampleSheetAndConfigFile(args []string) bool {
 	if err != nil {
 		fmt.Println("Config file has problem")
 		fmt.Println(err.Error())
-		return false
+		validateisfine = false
 	}
 
 	json.Unmarshal(rraw, &rss)
 	if displayMeesage {
 		fmt.Println("Load config file end")
 	}
-	return true
+	return validateisfine
 }

@@ -53,3 +53,15 @@ func Test_loadSampleSheetAndConfigFile_1file_fq1_missing_fail(t *testing.T) {
 
 	assert.True(t, result, "All files MUST be exists")
 }
+
+func Test_loadSampleSheetAndConfigFile_samplesheet_is_valid_configfile_data_is_invalid_fail(t *testing.T) {
+	result := loadSampleSheetAndConfigFile([]string{"../test/datafiles/samplesheet_1run-test.json", "../test/datafiles/invalid_configfile_data.json"})
+
+	assert.False(t, result, "Samplesheet data is valid But Configfile is invalid")
+}
+
+func Test_loadSampleSheetAndConfigFile_samplesheet_is_invalid_configfile_data_is_valid_fail(t *testing.T) {
+	result := loadSampleSheetAndConfigFile([]string{"../test/datafiles/invalid_samplesheet_data.json", "../test/datafiles/configfile_1run-test.json"})
+
+	assert.False(t, result, "Samplesheet data is invalid But Configfile is valid")
+}
