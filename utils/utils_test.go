@@ -138,3 +138,55 @@ func Test_IsExistsWorkflowFile_startsWith_https(t *testing.T) {
 
 	assert.True(t, result, "Workflow file is startsWith https://.")
 }
+
+func Test_IsInCondaEnv_set(t *testing.T) {
+	t.Setenv("CONDA_DEFAULT_ENV", "./dummy")
+	result := IsInCondaEnv()
+
+	assert.True(t, result, "CONDA_DEFAULT_ENV is set.")
+}
+func Test_IsInCondaEnv_empty(t *testing.T) {
+	t.Setenv("CONDA_DEFAULT_ENV", "")
+	result := IsInCondaEnv()
+
+	assert.False(t, result, "CONDA_DEFAULT_ENV is empty so false is expected")
+}
+
+func Test_IsInPythonVirtualenv_set(t *testing.T) {
+	t.Setenv("VIRTUAL_ENV", "./dummy")
+	result := IsInPythonVirtualenv()
+
+	assert.True(t, result, "VIRTUAL_ENV is set.")
+}
+func Test_IsInPythonVirtualenv_empty(t *testing.T) {
+	t.Setenv("VIRTUAL_ENV", "")
+	result := IsInPythonVirtualenv()
+
+	assert.False(t, result, "VIRTUAL_ENV is empty so false is expected")
+}
+
+func Test_IsInVirtualenv_CONDA_DEFAULT_ENV_set(t *testing.T) {
+	t.Setenv("CONDA_DEFAULT_ENV", "./dummy")
+	result := IsInVirtualenv()
+
+	assert.True(t, result, "CONDA_DEFAULT_ENV is set.")
+}
+func Test_IsInVirtualenv_CONDA_DEFAULT_ENV_empty(t *testing.T) {
+	t.Setenv("CONDA_DEFAULT_ENV", "")
+	result := IsInVirtualenv()
+
+	assert.False(t, result, "CONDA_DEFAULT_ENV is empty so false is expected")
+}
+
+func Test_IsInVirtualenv_VIRTUAL_ENV_set(t *testing.T) {
+	t.Setenv("VIRTUAL_ENV", "./dummy")
+	result := IsInVirtualenv()
+
+	assert.True(t, result, "VIRTUAL_ENV is set.")
+}
+func Test_IsInVirtualenv_VIRTUAL_ENV_empty(t *testing.T) {
+	t.Setenv("VIRTUAL_ENV", "")
+	result := IsInVirtualenv()
+
+	assert.False(t, result, "VIRTUAL_ENV is empty so false is expected")
+}

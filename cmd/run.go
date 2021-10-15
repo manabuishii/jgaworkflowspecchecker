@@ -18,7 +18,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 
 	"github.com/manabuishiii/jgaworkflowspecchecker/utils"
@@ -63,20 +62,85 @@ func init() {
 	runCmd.Flags().BoolVarP(&fileHashCheckFlag, "file-hash-check", "", true, "Check file hash value")
 
 }
-
-func runmain(args []string) {
-	loadSampleSheetAndConfigFile(args)
-
-	// files in sample sheet
-	if !utils.CheckSampleSheetFiles(&ss, fileExistsCheckFlag, fileHashCheckFlag, displayMeesage) {
-		fmt.Println("Some files in sample sheet are missing.")
-		return
+func copyFiles(outputDirectoryPath string, samplesheet_data_file string, config_data_file string) bool {
+	// copy sample_sheet file
+	original_sample_sheet, err := os.Open(samplesheet_data_file)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer original_sample_sheet.Close()
+	copied_sample_sheet, err := os.Create(outputDirectoryPath + "/" + original_sample_sheet.Name())
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	defer copied_sample_sheet.Close()
+	_, err = io.Copy(copied_sample_sheet, original_sample_sheet)
+	if err != nil {
+		fmt.Println(err)
+		return false
 	}
 
+	// copy config file
+	original_configfile, err := os.Open(config_data_file)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	defer original_configfile.Close()
+	copied_configfile, err := os.Create(outputDirectoryPath + "/" + original_configfile.Name())
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	defer copied_configfile.Close()
+	_, err = io.Copy(copied_configfile, original_configfile)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	return true
+}
+
+func createDirectory(outputDirectoryPath string) bool {
+	// Create output directory
+	// if not create , show error message and exit
+	if err := os.MkdirAll(outputDirectoryPath, 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create output directory")
+		return false
+	}
+
+	if err := os.MkdirAll(outputDirectoryPath+"/toil-outputs", 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create toil outputs directory")
+		return false
+	}
+	if err := os.MkdirAll(outputDirectoryPath+"/logs", 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create logs directory")
+		return false
+	}
+	if err := os.MkdirAll(outputDirectoryPath+"/jobstores", 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create jobstores directory")
+		return false
+	}
+	return true
+}
+
+func checkSampleSheet(ss *utils.SimpleSchema) bool {
+	if !utils.CheckSampleSheetFiles(ss, fileExistsCheckFlag, fileHashCheckFlag, displayMeesage) {
+		fmt.Println("Some files in sample sheet are missing.")
+		return false
+	}
+	return true
+}
+func checkConfigFile(rss *utils.ReferenceSchema) bool {
 	secondaryFilesCheck, _ := utils.CheckSecondaryFilesExists(rss.Reference.Path)
 	if !secondaryFilesCheck {
 		fmt.Println("Some secondary file is missing")
-		return
+		return false
 	}
 
 	// Set output directory path
@@ -85,77 +149,47 @@ func runmain(args []string) {
 	// currently check local filesystem only
 	if !utils.IsExistsWorkflowFile(workflowFilePath) {
 		fmt.Printf("Missing workflow file [%s]\n", workflowFilePath)
-		os.Exit(1)
-	}
-	// Set output directory path
-	outputDirectoryPath := rss.OutputDirectory.Path
-	// Create output directory
-	// if not create , show error message and exit
-	if err := os.MkdirAll(outputDirectoryPath, 0755); err != nil {
-		fmt.Println(err)
-		fmt.Println("cannot create output directory")
-		return
-	}
-
-	if err := os.MkdirAll(outputDirectoryPath+"/toil-outputs", 0755); err != nil {
-		fmt.Println(err)
-		fmt.Println("cannot create toil outputs directory")
-		return
-	}
-	if err := os.MkdirAll(outputDirectoryPath+"/logs", 0755); err != nil {
-		fmt.Println(err)
-		fmt.Println("cannot create logs directory")
-		return
-	}
-	if err := os.MkdirAll(outputDirectoryPath+"/jobstores", 0755); err != nil {
-		fmt.Println(err)
-		fmt.Println("cannot create jobstores directory")
-		return
-	}
-
-	// copy sample_sheet file
-	original_sample_sheet, err := os.Open(os.Args[2])
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer original_sample_sheet.Close()
-	copied_sample_sheet, err := os.Create(outputDirectoryPath + "/" + original_sample_sheet.Name())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer copied_sample_sheet.Close()
-	_, err = io.Copy(copied_sample_sheet, original_sample_sheet)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// copy config file
-	original_configfile, err := os.Open(os.Args[4])
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer original_configfile.Close()
-	copied_configfile, err := os.Create(outputDirectoryPath + "/" + original_configfile.Name())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer copied_configfile.Close()
-	_, err = io.Copy(copied_configfile, original_configfile)
-	if err != nil {
-		log.Fatal(err)
+		return false
 	}
 	// check workflow file is exists
-	if !utils.CheckAndDisplayFilesForExecute(&rss) {
+	if !utils.CheckAndDisplayFilesForExecute(rss) {
 		fmt.Println("Some files for workflow execution are missing.")
-		os.Exit(1)
+		return false
 	}
-	// create job file for CWL
-	utils.CreateJobFile(&ss, &rss)
+	return true
+}
+func runmain(args []string) {
+	loadSampleSheetAndConfigFile(args)
+	// check in sample sheet data
+	if !checkSampleSheet(&ss) {
+		return
+	}
+	// check in config data
+	if !checkConfigFile(&rss) {
+		return
+	}
 
-	// check toil-cwl-runner is exists or not
-	foundToilCWLRunner := utils.IsExistsToilCWLRunner()
-
-	// dry-run
+	// Setup output directory
+	outputDirectoryPath := rss.OutputDirectory.Path
+	if !dryrunFlag {
+		// create output directory
+		isDirecotryCreate := createDirectory(outputDirectoryPath)
+		if !isDirecotryCreate {
+			fmt.Println("Can not create output direcoty")
+			os.Exit(1)
+		}
+		//
+		samplesheet_data_file := args[0]
+		config_data_file := args[1]
+		// copy samplesheet and config file
+		isCopyFiles := copyFiles(outputDirectoryPath, samplesheet_data_file, config_data_file)
+		if !isCopyFiles {
+			fmt.Println("Can not copy files to output direcoty")
+			os.Exit(1)
+		}
+		// create job file for CWL
+		utils.CreateJobFile(&ss, &rss)
+	}
 
 	// exec and wait
 	var eg errgroup.Group
@@ -181,7 +215,6 @@ func runmain(args []string) {
 					isExecute = true
 				}
 			}
-			//fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, s.SampleId)
 		}
 		if isExecute {
 			executeCount += 1
@@ -190,10 +223,12 @@ func runmain(args []string) {
 			fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, sampleId)
 			if !dryrunFlag {
 				// TODO exec real
+				// check toil-cwl-runner is exists or not
+				foundToilCWLRunner := utils.IsExistsToilCWLRunner()
 				if foundToilCWLRunner {
 					// only exec when toil-cwl-runner is found
 					eg.Go(func() error {
-						utils.ExecCWL(outputDirectoryPath, workflowFilePath, sampleId)
+						utils.ExecCWL(outputDirectoryPath, rss.WorkflowFile.Path, sampleId)
 						return nil
 					})
 				}
@@ -201,10 +236,11 @@ func runmain(args []string) {
 		}
 	}
 	if dryrunFlag {
+		// TODO #69 実際に実行される予定の数を分母にする
 		fmt.Printf("[%d/%d] task will be executed.\n", executeCount, len(ss.SampleList))
 	}
 	if err := eg.Wait(); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 
 	fmt.Println("fin")
