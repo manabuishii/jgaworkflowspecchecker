@@ -18,8 +18,6 @@ var samplesheetfileBytes []byte
 //go:embed configfile_schema.json
 var configfileBytes []byte
 
-//_ :=
-//print(loader)
 //
 func loadSampleSheetAndConfigFile(args []string) {
 	if len(args) != 2 {
