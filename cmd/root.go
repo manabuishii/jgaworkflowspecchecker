@@ -30,6 +30,7 @@ var cfgFile string
 //
 var ss utils.SimpleSchema
 var rss utils.ReferenceSchema
+var displayMeesage bool = false
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

@@ -67,6 +67,12 @@ func init() {
 func runmain(args []string) {
 	loadSampleSheetAndConfigFile(args)
 
+	// files in sample sheet
+	if !utils.CheckSampleSheetFiles(&ss, fileExistsCheckFlag, fileHashCheckFlag, displayMeesage) {
+		fmt.Println("Some files in sample sheet are missing.")
+		return
+	}
+
 	secondaryFilesCheck, _ := utils.CheckSecondaryFilesExists(rss.Reference.Path)
 	if !secondaryFilesCheck {
 		fmt.Println("Some secondary file is missing")
