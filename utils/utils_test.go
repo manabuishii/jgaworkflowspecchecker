@@ -114,3 +114,27 @@ func Test_buildVersionString_full(t *testing.T) {
 	assert.Equal(t, "Version: 0.9.0-abcdefab (built at 2021-11-11T11:22:33)\n", result, "version string just version, commit id and date")
 
 }
+
+func Test_IsExistsWorkflowFile_valid(t *testing.T) {
+	result := IsExistsWorkflowFile("../test/samplefiles/dummy.workflow.cwl")
+
+	assert.True(t, result, "Workflow file is exists")
+}
+
+func Test_IsExistsWorkflowFile_fail(t *testing.T) {
+	result := IsExistsWorkflowFile("../test/samplefiles/nosucha.workflow.cwl")
+
+	assert.False(t, result, "Workflow file MUST be missing")
+}
+
+func Test_IsExistsWorkflowFile_startsWith_http(t *testing.T) {
+	result := IsExistsWorkflowFile("http://example.com/test/samplefiles/nosucha.workflow.cwl")
+
+	assert.True(t, result, "Workflow file is startsWith http://.")
+}
+
+func Test_IsExistsWorkflowFile_startsWith_https(t *testing.T) {
+	result := IsExistsWorkflowFile("https://example.com/test/samplefiles/nosucha.workflow.cwl")
+
+	assert.True(t, result, "Workflow file is startsWith https://.")
+}
