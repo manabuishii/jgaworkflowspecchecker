@@ -654,3 +654,35 @@ func createToilCwlRunnerArguments(outputDirectoryPath string, sampleId string, w
 	commandArgs := []string{"--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", jobStoreDir, "--outdir", outputDirectoryPath + "/" + sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", logFilePath, workflowFilePath, sampleId + "_jobfile.yaml"}
 	return commandArgs
 }
+
+func CreateExecuteSampleIDList(outputDirectoryPath string, ss *SimpleSchema) []string {
+	result := []string{}
+	for _, s := range ss.SampleList {
+		isExecute := false
+		// Check SampleId result directory is exist
+		if _, err := os.Stat(outputDirectoryPath + "/" + s.SampleId); os.IsNotExist(err) {
+			// SampleId result directory is missing
+			// so this id must be executed
+			isExecute = true
+		} else {
+			// check all result file is found or not
+			// SampleId prefix files check
+			check1 := IsExistsAllResultFilesPrefixSampleId(outputDirectoryPath, s.SampleId)
+			if !check1 {
+				isExecute = true
+			}
+			// RunID prefix files check
+			for _, r := range s.RunList {
+				check2 := IsExistsAllResultFilesPrefixRunId(outputDirectoryPath+"/"+s.SampleId, r.RunId)
+				if !check2 {
+					isExecute = true
+				}
+			}
+		}
+		if isExecute {
+			// fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, s.SampleId)
+			result = append(result, s.SampleId)
+		}
+	}
+	return result
+}
