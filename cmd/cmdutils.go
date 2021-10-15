@@ -24,7 +24,7 @@ var configfileBytes []byte
 func loadSampleSheetAndConfigFile(args []string) {
 	if len(args) != 2 {
 		fmt.Println("Some required files are not specified.")
-		fmt.Println("samplesheet_schema samplesheet_data configfile_schema configfile_data")
+		fmt.Println("samplesheet_data configfile_data")
 		os.Exit(1)
 	}
 	path, _ := filepath.Abs("./")
