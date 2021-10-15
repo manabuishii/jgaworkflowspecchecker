@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 
 	"github.com/manabuishiii/jgaworkflowspecchecker/utils"
@@ -20,30 +19,30 @@ var configfileBytes []byte
 
 /*
  * Behavior:
- *   All fine: return
- *   Something wrong: exit program
+ *   All fine: true
+ *   Something wrong: false
  */
-func loadSampleSheetAndConfigFile(args []string) {
+func loadSampleSheetAndConfigFile(args []string) bool {
 	if len(args) != 2 {
 		fmt.Println("Some required files are not specified.")
 		fmt.Println("samplesheet_data configfile_data")
-		os.Exit(1)
+		return false
 	}
 	path, _ := filepath.Abs("./")
 	samplesheet_data_file := args[0]
 	config_data_file := args[1]
 	allfileexist := true
 	if !utils.IsExistsFile(samplesheet_data_file) {
-		fmt.Printf("[%s] is missing\n", samplesheet_data_file)
+		fmt.Printf("[%s] is missing sample data file\n", samplesheet_data_file)
 		allfileexist = false
 	}
 	if !utils.IsExistsFile(config_data_file) {
-		fmt.Printf("[%s] is missing\n", config_data_file)
+		fmt.Printf("[%s] is missing config data file\n", config_data_file)
 		allfileexist = false
 	}
 	if !allfileexist {
 		fmt.Println("Some required files are missing. So stop execute")
-		return
+		return false
 	}
 
 	// MUST must be canonical
@@ -70,8 +69,9 @@ func loadSampleSheetAndConfigFile(args []string) {
 	}
 	raw, err := ioutil.ReadFile(samplesheet_data_file)
 	if err != nil {
+		fmt.Println("Samplesheet has some problems")
 		fmt.Println(err.Error())
-		os.Exit(1)
+		return false
 	}
 
 	json.Unmarshal(raw, &ss)
@@ -97,24 +97,21 @@ func loadSampleSheetAndConfigFile(args []string) {
 		for _, desc := range rresult.Errors() {
 			fmt.Printf("- %s\n", desc)
 		}
-		return
+		return false
 	}
 	if displayMeesage {
 		fmt.Println("Load config file")
 	}
 	rraw, err := ioutil.ReadFile(config_data_file)
 	if err != nil {
+		fmt.Println("Config file has problem")
 		fmt.Println(err.Error())
-		os.Exit(1)
+		return false
 	}
 
 	json.Unmarshal(rraw, &rss)
 	if displayMeesage {
 		fmt.Println("Load config file end")
 	}
-	// files in sample sheet
-	if !utils.CheckSampleSheetFiles(&ss, fileExistsCheckFlag, fileHashCheckFlag, displayMeesage) {
-		fmt.Println("Some files in sample sheet are missing.")
-		os.Exit(1)
-	}
+	return true
 }

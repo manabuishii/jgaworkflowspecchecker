@@ -1,0 +1,33 @@
+{
+        "name": "nig",
+    "samplelist": [
+        {
+            "sampleid": "NA12878",
+            "platform": "Illumina NovaSeq6000",
+            "runlist": [
+                {
+                    "runid": "ERR3239334",
+                    "data": {
+                        "se_or_pe": "PE",
+                        "fq1": "../test/samplefiles/dummy.fq1.fa",
+                        "fq2": "../test/samplefiles/dummy.fq2.fa"
+                    }
+                }
+            ]
+        },
+        {
+            "sampleid": "NA1287O",
+            "platform": "Illumina NovaSeq6000",
+            "runlist": [
+                {
+                    "runid": "ERR3239335",
+                    "data": {
+                        "se_or_pe": "PE",
+                        "fq1": "../test/samplefiles/dummy2.fq1.fa",
+                        "fq2": "../test/samplefiles/dummy2.fq2.fa"
+                    }
+                }
+            ]
+        }
+    ]
+}

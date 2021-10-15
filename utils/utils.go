@@ -372,7 +372,9 @@ func IsInPythonVirtualenv() bool {
 
 /*
   Check whether workflow path is exists .
-  MEMO: Path starts http:// or https:// , do not check.
+  exist: true
+  not exist: false
+  MEMO: Path starts http:// or https:// , do not check. always true
 */
 func IsExistsWorkflowFile(workflowFilePath string) bool {
 	if !strings.HasPrefix(workflowFilePath, "http://") {
@@ -386,7 +388,7 @@ func IsExistsWorkflowFile(workflowFilePath string) bool {
 }
 
 func DisplayJobManagerRecoginition(rss *ReferenceSchema) {
-	//fmt.Printf("Workflow file is exists [%t]\n", isExistsWorkflowFile(workflowFilePath))
+	fmt.Printf("Workflow file is exists [%t]\n", IsExistsWorkflowFile(rss.WorkflowFile.Path))
 	fmt.Printf("toil-cwl-runner is exists [%t]\n", IsExistsToilCWLRunner())
 	fmt.Printf("Using Virtualenv if true set TOIL_CHECK_ENV=True [%t]\n", IsInVirtualenv())
 

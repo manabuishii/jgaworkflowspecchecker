@@ -33,10 +33,11 @@ Slurm command
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("displayJobmanagerRecognition called")
-		// TODO resolv workflow path
+		// This command display recognition of JobManager.
+		// So result of loadSampleSheetAndConfigFile is not care.
 		loadSampleSheetAndConfigFile(args)
-		utils.DisplayJobManagerRecoginition(&rss)
 		utils.CheckSampleSheetFiles(&ss, fileExistsCheckFlag, fileHashCheckFlag, displayMeesage)
+		utils.DisplayJobManagerRecoginition(&rss)
 	},
 }
 
