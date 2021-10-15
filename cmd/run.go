@@ -204,7 +204,7 @@ func runmain(args []string) {
 		fmt.Printf("[%d/%d] task will be executed.\n", executeCount, len(ss.SampleList))
 	}
 	if err := eg.Wait(); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 
 	fmt.Println("fin")
