@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/jinzhu/copier"
 	"github.com/manabuishiii/jgaworkflowspecchecker/utils"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
@@ -185,27 +186,8 @@ func runmain(args []string) {
 	var eg errgroup.Group
 	executeCount := 0
 	for i, s := range ss.SampleList {
-		isExecute := false
-		// Check SampleId result directory is exist
-		if _, err := os.Stat(outputDirectoryPath + "/" + s.SampleId); os.IsNotExist(err) {
-			// SampleId result directory is missing
-			// so this id must be executed
-			isExecute = true
-		} else {
-			// check all result file is found or not
-			// SampleId prefix files check
-			check1 := utils.IsExistsAllResultFilesPrefixSampleId(outputDirectoryPath, s.SampleId)
-			if !check1 {
-				isExecute = true
-			}
-			// RunID prefix files check
-			for _, r := range s.RunList {
-				check2 := utils.IsExistsAllResultFilesPrefixRunId(outputDirectoryPath+"/"+s.SampleId, r.RunId)
-				if !check2 {
-					isExecute = true
-				}
-			}
-		}
+		// sample id has something missing. sample id executes
+		isExecute := !utils.CheckAllResultFiles(outputDirectoryPath, s)
 		if isExecute {
 			executeCount += 1
 			fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, s.SampleId)
@@ -214,8 +196,10 @@ func runmain(args []string) {
 				// check toil-cwl-runner is exists or not
 				if foundToilCWLRunner {
 					// only exec when toil-cwl-runner is found
+					var sampleForExecCWL utils.Sample
+					copier.Copy(&sampleForExecCWL, &s)
 					eg.Go(func() error {
-						utils.ExecCWL(s, &rss)
+						utils.ExecCWL(&sampleForExecCWL, &rss)
 						return nil
 					})
 				}
