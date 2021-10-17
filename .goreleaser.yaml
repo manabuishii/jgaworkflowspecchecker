@@ -9,9 +9,9 @@ builds:
     binary: jgaworkflowmanager
     ldflags:
       - -s -w
-      - -X github.com/manabuishiii/jgaworkflowspecchecker/cmd.version={{.Version}}
-      - -X github.com/manabuishiii/jgaworkflowspecchecker/cmd.revision={{.ShortCommit}}
-      - -X github.com/manabuishiii/jgaworkflowspecchecker/cmd.date={{.CommitDate}}
+      - -X github.com/manabuishiii/jgaworkflowspecchecker/cmd.Version={{.Version}}
+      - -X github.com/manabuishiii/jgaworkflowspecchecker/cmd.Revision={{.ShortCommit}}
+      - -X github.com/manabuishiii/jgaworkflowspecchecker/cmd.Date={{.CommitDate}}
     env:
       - CGO_ENABLED=0
     goos:
