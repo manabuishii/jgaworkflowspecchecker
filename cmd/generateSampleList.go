@@ -16,8 +16,8 @@ limitations under the License.
 package cmd
 
 import (
+	"bufio"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -48,7 +48,7 @@ func init() {
 	// generateSampleListCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func generateSampleListMain(args []string) {
+func generateSampleListMain(args []string) bool {
 	// load SampleSheet and ConfigFile
 	loadSuccess := loadSampleSheetAndConfigFile(args)
 	if !loadSuccess {
@@ -63,8 +63,26 @@ func generateSampleListMain(args []string) {
 	// output
 	d, err := yaml.Marshal(&sampleIdList)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		fmt.Printf("error: %v\n", err)
+		return false
 	}
-	fmt.Printf("%s", string(d))
 
+	// Create Sample List file
+	samplelistfile := rss.OutputDirectory.Path + "/sample_list.yaml"
+	file, err := os.Create(samplelistfile)
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+		return false
+	}
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	if _, err := writer.WriteString(string(d)); err != nil {
+		fmt.Printf("error: %v\n", err)
+		return false
+	}
+	// Flush
+	writer.Flush()
+	// display sample_list file path
+	fmt.Printf("Sample ID List: %s\n", samplelistfile)
+	return true
 }
