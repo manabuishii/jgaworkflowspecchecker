@@ -223,7 +223,6 @@ func runmain(args []string) {
 		}
 	}
 	if dryrunFlag {
-		// TODO #69 実際に実行される予定の数を分母にする
 		fmt.Printf("[%d/%d] task will be executed.\n", executeCount, len(ss.SampleList))
 	}
 	if err := eg.Wait(); err != nil {
