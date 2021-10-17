@@ -589,8 +589,37 @@ func CheckSecondaryFilesExists(fn string) (bool, error) {
 	return result, nil
 }
 
-func ExecCWL(s *Sample, rss *ReferenceSchema) string {
-	sampleId := s.SampleId
+/*
+ Result directory and files are exists return true.
+ Something missing return false
+*/
+func CheckAllResultFiles(outputDirectoryPath string, s *Sample) bool {
+	allExists := true
+	// Check SampleId result directory is exist
+	if _, err := os.Stat(outputDirectoryPath + "/" + s.SampleId); os.IsNotExist(err) {
+		// SampleId result directory is missing
+		// so this id must be executed
+		allExists = false
+	} else {
+		// check all result file is found or not
+		// SampleId prefix files check
+		check1 := IsExistsAllResultFilesPrefixSampleId(outputDirectoryPath, s.SampleId)
+		if !check1 {
+			allExists = false
+		}
+		// RunID prefix files check
+		for _, r := range s.RunList {
+			check2 := IsExistsAllResultFilesPrefixRunId(outputDirectoryPath+"/"+s.SampleId, r.RunId)
+			if !check2 {
+				allExists = false
+			}
+		}
+	}
+	return allExists
+}
+
+func ExecCWL(sample *Sample, rss *ReferenceSchema) string {
+	sampleId := sample.SampleId
 	// execute toil
 	//p, _ := os.Getwd()
 	// c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
@@ -609,7 +638,7 @@ func ExecCWL(s *Sample, rss *ReferenceSchema) string {
 	}
 
 	// Create job file for CWL
-	CreateJobFile(jobManagerDirectory, s, rss)
+	CreateJobFile(jobManagerDirectory, sample, rss)
 	// outdir is using as CWL output directory. All files is here, if CWL execution is sucessfully finished.
 	outdir := rss.OutputDirectory.Path + "/" + sampleId
 	// Create Command Line Arguments for CWL execution
@@ -650,11 +679,19 @@ func ExecCWL(s *Sample, rss *ReferenceSchema) string {
 	defer stderrwriter.Flush()
 	//
 	defer func() {
+		//
+		displayErrorMessageFlag := false
 		// display messages depending on exitCode
 		if exitCode == 0 {
-			fmt.Printf("SampleId: %s is successfully finished\n", sampleId)
+			if CheckAllResultFiles(rss.OutputDirectory.Path, sample) {
+				fmt.Printf("SampleId: %s is successfully finished\n", sampleId)
+			} else {
+				displayErrorMessageFlag = true
+			}
 		} else {
-			// TODO Check all output file is fine #22
+			displayErrorMessageFlag = true
+		}
+		if displayErrorMessageFlag {
 			stdoutfileabs, _ := filepath.Abs(stdoutfile.Name())
 			stderrfileabs, _ := filepath.Abs(stderrfile.Name())
 
@@ -671,16 +708,13 @@ func getCurrentTime() string {
 	return time.Now().Format("20060102150405")
 }
 
-func createJobStoreDir(jobManagerDirectory string) string {
-	return jobManagerDirectory + "/jobStore"
-}
 func createLogFilePath(jobManagerDirectory string, sampleId string) string {
 	return jobManagerDirectory + "/logs/" + sampleId + ".log"
 }
 
 func createToilCwlRunnerArguments(outdir string, jobManagerDirectory string, sampleId string, workflowFilePath string, currentTime string) []string {
 
-	jobStoreDir := createJobStoreDir(jobManagerDirectory)
+	jobStoreDir := jobManagerDirectory + "/jobStore"
 	logFilePath := createLogFilePath(jobManagerDirectory, sampleId)
 	commandArgs := []string{"--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", jobStoreDir, "--outdir", outdir, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", logFilePath, workflowFilePath, jobManagerDirectory + "/job-file.yaml"}
 	return commandArgs
