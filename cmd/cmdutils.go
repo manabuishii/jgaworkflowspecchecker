@@ -17,6 +17,12 @@ var samplesheetfileBytes []byte
 //go:embed configfile_schema.json
 var configfileBytes []byte
 
+//go:embed create_docker_image.sh
+var createDockerImageScript []byte
+
+//go:embed create_singularity_image.sh
+var createSingularityImageScript []byte
+
 /*
  * Behavior:
  *   All fine: true

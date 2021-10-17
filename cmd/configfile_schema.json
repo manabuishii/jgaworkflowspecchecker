@@ -26,6 +26,18 @@
         },
         "required": [ "path" ]
       },
+      "container_cache_directory": {
+        "$id": "#container_cache_directory",
+        "description": "Container image cache directory path, singularity or docker images are save this directory",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "Container image cache directory",
+            "type": "string"
+          }
+        },
+        "required": [ "path" ]
+      },
       "reference":{
         "$id": "#reference",
         "description": "Reference",
@@ -203,6 +215,7 @@
   "required": [
       "workflow_file",
       "output_directory",
+      "container_cache_directory",
       "reference",
       "sortsam_max_records_in_ram",
       "sortsam_java_options",
