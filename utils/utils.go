@@ -52,12 +52,13 @@ type PathOnlyObject struct {
 }
 
 type ReferenceSchema struct {
-	WorkflowFile           *PathOnlyObject `json:"workflow_file"`
-	OutputDirectory        *PathOnlyObject `json:"output_directory"`
-	Reference              *PathObject     `json:"reference"`
-	SortsamMaxRecordsInRam int             `json:"sortsam_max_records_in_ram"`
-	SortsamJavaOptions     string          `json:"sortsam_java_options"`
-	Cores                  int             `json:"cores"`
+	WorkflowFile            *PathOnlyObject `json:"workflow_file"`
+	OutputDirectory         *PathOnlyObject `json:"output_directory"`
+	ContainerCacheDirectory *PathOnlyObject `json:"container_cache_directory"`
+	Reference               *PathObject     `json:"reference"`
+	SortsamMaxRecordsInRam  int             `json:"sortsam_max_records_in_ram"`
+	SortsamJavaOptions      string          `json:"sortsam_java_options"`
+	Cores                   int             `json:"cores"`
 
 	BwaBasesPerBatch                       int             `json:"bwa_bases_per_batch"`
 	UseBqsr                                bool            `json:"use_bqsr"`
@@ -337,6 +338,11 @@ func IsExistsToilCWLRunner() bool {
 
 func IsExistsSbatch() bool {
 	_, err := exec.LookPath("sbatch")
+	return err == nil
+}
+
+func IsExistsDocker() bool {
+	_, err := exec.LookPath("docker")
 	return err == nil
 }
 
