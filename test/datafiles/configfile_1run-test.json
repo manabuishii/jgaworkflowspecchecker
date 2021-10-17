@@ -5,6 +5,9 @@
     "output_directory": {
         "path": "../tmp/dummydata"
     },
+    "container_cache_directory": {
+        "path": "../tmp/dummycachedir"
+    },
     "reference": {
         "path": "../test/secondaryfile/case1.fasta"
     },
