@@ -671,16 +671,13 @@ func getCurrentTime() string {
 	return time.Now().Format("20060102150405")
 }
 
-func createJobStoreDir(jobManagerDirectory string) string {
-	return jobManagerDirectory + "/jobStore"
-}
 func createLogFilePath(jobManagerDirectory string, sampleId string) string {
 	return jobManagerDirectory + "/logs/" + sampleId + ".log"
 }
 
 func createToilCwlRunnerArguments(outdir string, jobManagerDirectory string, sampleId string, workflowFilePath string, currentTime string) []string {
 
-	jobStoreDir := createJobStoreDir(jobManagerDirectory)
+	jobStoreDir := jobManagerDirectory + "/jobStore"
 	logFilePath := createLogFilePath(jobManagerDirectory, sampleId)
 	commandArgs := []string{"--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", jobStoreDir, "--outdir", outdir, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", logFilePath, workflowFilePath, jobManagerDirectory + "/job-file.yaml"}
 	return commandArgs
