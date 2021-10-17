@@ -601,6 +601,13 @@ func ExecCWL(s *Sample, rss *ReferenceSchema) string {
 		fmt.Println("cannot create output directory")
 		return "cannot create output directory"
 	}
+	// for toil-cwl-runner created logfile
+	if err := os.MkdirAll(jobManagerDirectory+"/logs", 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create logs directory for toil-cwl-runner created logfile")
+		return "cannot create logs directory for toil-cwl-runner created logfile"
+	}
+
 	// Create job file for CWL
 	CreateJobFile(jobManagerDirectory, s, rss)
 	// outdir is using as CWL output directory. All files is here, if CWL execution is sucessfully finished.
