@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/manabuishiii/jgaworkflowspecchecker/utils"
 	"github.com/spf13/cobra"
@@ -68,7 +69,7 @@ func copyFiles(outputDirectoryPath string, samplesheet_data_file string, config_
 		fmt.Println(err)
 	}
 	defer original_sample_sheet.Close()
-	copied_sample_sheet, err := os.Create(outputDirectoryPath + "/" + original_sample_sheet.Name())
+	copied_sample_sheet, err := os.Create(outputDirectoryPath + "/" + filepath.Base(samplesheet_data_file))
 	if err != nil {
 		fmt.Println(err)
 		return false
@@ -87,7 +88,7 @@ func copyFiles(outputDirectoryPath string, samplesheet_data_file string, config_
 		return false
 	}
 	defer original_configfile.Close()
-	copied_configfile, err := os.Create(outputDirectoryPath + "/" + original_configfile.Name())
+	copied_configfile, err := os.Create(outputDirectoryPath + "/" + filepath.Base((config_data_file)))
 	if err != nil {
 		fmt.Println(err)
 		return false
@@ -107,22 +108,6 @@ func createDirectory(outputDirectoryPath string) bool {
 	if err := os.MkdirAll(outputDirectoryPath, 0755); err != nil {
 		fmt.Println(err)
 		fmt.Println("cannot create output directory")
-		return false
-	}
-
-	if err := os.MkdirAll(outputDirectoryPath+"/toil-outputs", 0755); err != nil {
-		fmt.Println(err)
-		fmt.Println("cannot create toil outputs directory")
-		return false
-	}
-	if err := os.MkdirAll(outputDirectoryPath+"/logs", 0755); err != nil {
-		fmt.Println(err)
-		fmt.Println("cannot create logs directory")
-		return false
-	}
-	if err := os.MkdirAll(outputDirectoryPath+"/jobstores", 0755); err != nil {
-		fmt.Println(err)
-		fmt.Println("cannot create jobstores directory")
 		return false
 	}
 	return true
@@ -167,10 +152,18 @@ func runmain(args []string) {
 	if !checkConfigFile(&rss) {
 		return
 	}
+	//
+	foundToilCWLRunner := utils.IsExistsToilCWLRunner()
 
 	// Setup output directory
 	outputDirectoryPath := rss.OutputDirectory.Path
 	if !dryrunFlag {
+		//
+		if !foundToilCWLRunner {
+			fmt.Println("toil-cwl-runner not found, so can not execute anything.")
+			fmt.Println("To ckeck execution environment using `display-jobmanager-recognition`")
+			return
+		}
 		// create output directory
 		isDirecotryCreate := createDirectory(outputDirectoryPath)
 		if !isDirecotryCreate {
@@ -186,8 +179,6 @@ func runmain(args []string) {
 			fmt.Println("Can not copy files to output direcoty")
 			os.Exit(1)
 		}
-		// create job file for CWL
-		utils.CreateJobFile(&ss, &rss)
 	}
 
 	// exec and wait
@@ -217,17 +208,14 @@ func runmain(args []string) {
 		}
 		if isExecute {
 			executeCount += 1
-			sampleId := s.SampleId
-
-			fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, sampleId)
+			fmt.Printf("index: %d, SampleId: %s will be Execute new.\n", i, s.SampleId)
 			if !dryrunFlag {
 				// TODO exec real
 				// check toil-cwl-runner is exists or not
-				foundToilCWLRunner := utils.IsExistsToilCWLRunner()
 				if foundToilCWLRunner {
 					// only exec when toil-cwl-runner is found
 					eg.Go(func() error {
-						utils.ExecCWL(outputDirectoryPath, rss.WorkflowFile.Path, sampleId)
+						utils.ExecCWL(s, &rss)
 						return nil
 					})
 				}

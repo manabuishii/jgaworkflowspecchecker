@@ -298,31 +298,26 @@ func outputJobFile(s *Sample, rss *ReferenceSchema) (string, error) {
 	return byteBuf.String(), nil
 }
 
-func CreateJobFile(ss *SimpleSchema, rss *ReferenceSchema) error {
-	for _, s := range ss.SampleList {
-		// create file
-		//
-		filename := fmt.Sprintf("%s_jobfile.yaml", s.SampleId)
-		file, err := os.Create(filename)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		writer := bufio.NewWriter(file)
-		// output reference data to job file per each sampleID
-		referenceData, _ := outputReference(rss)
-		if _, err := writer.WriteString(referenceData); err != nil {
-			return err
-		}
-		sampleData, _ := outputJobFile(s, rss)
-		if _, err := writer.WriteString(sampleData); err != nil {
-			return err
-		}
-
-		// Flush
-		writer.Flush()
-
+func CreateJobFile(jobManagerDirectory string, s *Sample, rss *ReferenceSchema) error {
+	// Create Job file
+	jobfilename := jobManagerDirectory + "/job-file.yaml"
+	file, err := os.Create(jobfilename)
+	if err != nil {
+		return err
 	}
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	// output reference data to job file per each sampleID
+	referenceData, _ := outputReference(rss)
+	if _, err := writer.WriteString(referenceData); err != nil {
+		return err
+	}
+	sampleData, _ := outputJobFile(s, rss)
+	if _, err := writer.WriteString(sampleData); err != nil {
+		return err
+	}
+	// Flush
+	writer.Flush()
 	return nil
 }
 
@@ -594,27 +589,49 @@ func CheckSecondaryFilesExists(fn string) (bool, error) {
 	return result, nil
 }
 
-func ExecCWL(outputDirectoryPath string, workflowFilePath string, sampleId string) string {
+func ExecCWL(s *Sample, rss *ReferenceSchema) string {
+	sampleId := s.SampleId
 	// execute toil
 	//p, _ := os.Getwd()
 	// c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
-	commandArgs := createToilCwlRunnerArguments(outputDirectoryPath, sampleId, workflowFilePath)
+	currentTime := getCurrentTime()
+	jobManagerDirectory := rss.OutputDirectory.Path + "/jobManager/" + currentTime + "/" + sampleId
+	if err := os.MkdirAll(jobManagerDirectory, 0755); err != nil {
+		fmt.Println(err)
+		fmt.Println("cannot create output directory")
+		return "cannot create output directory"
+	}
+	// Create job file for CWL
+	CreateJobFile(jobManagerDirectory, s, rss)
+	// outdir is using as CWL output directory. All files is here, if CWL execution is sucessfully finished.
+	outdir := rss.OutputDirectory.Path + "/" + sampleId
+	// Create Command Line Arguments for CWL execution
+	commandArgs := createToilCwlRunnerArguments(outdir, jobManagerDirectory, sampleId, rss.WorkflowFile.Path, currentTime)
+	// Create Command.
 	c1 := exec.Command("toil-cwl-runner", commandArgs...)
-	// set environment value if needed
-	//c1.Env = append(os.Environ(), "TOIL_SLURM_ARGS=\"-w node[1-9]\"")
+	// Set environment value if needed
+	scriptEnv := os.Environ()
+	// Set about Virtual environment such as CONDA_DEFAULT_ENV(conda) or VIRTUAL_ENV(python)
+	if IsInVirtualenv() {
+		scriptEnv = append(scriptEnv, "TOIL_CHECK_ENV=True")
+	}
+	// TODO support docker
+	scriptEnv = append(scriptEnv, "CWL_SINGULARITY_CACHE="+rss.ContainerCacheDirectory.Path)
+	c1.Env = scriptEnv
+	// Currently do not set other environment value by JobManager
 	//
-	stdoutfile, _ := os.Create(outputDirectoryPath + "/toil-outputs/" + sampleId + "-stdout.txt")
+	stdoutfile, _ := os.Create(jobManagerDirectory + "/toil.stdout.txt")
 	defer stdoutfile.Close()
 	c1.Stdout = stdoutfile
 	//
-	stderrfile, _ := os.Create(outputDirectoryPath + "/toil-outputs/" + sampleId + "-stderr.txt")
+	stderrfile, _ := os.Create(jobManagerDirectory + "/toil.stderr.txt")
 	defer stderrfile.Close()
 	c1.Stderr = stderrfile
 	//
 	c1.Start()
 	c1.Wait()
 	// output exitcode
-	exitcodefile, _ := os.Create(outputDirectoryPath + "/toil-outputs/" + sampleId + "-exitcode.txt")
+	exitcodefile, _ := os.Create(jobManagerDirectory + "/toil.exitcode.txt")
 	defer exitcodefile.Close()
 	exitCode := c1.ProcessState.ExitCode()
 	exitcodefile.WriteString(fmt.Sprintf("%d\n", exitCode))
@@ -630,6 +647,7 @@ func ExecCWL(outputDirectoryPath string, workflowFilePath string, sampleId strin
 		if exitCode == 0 {
 			fmt.Printf("SampleId: %s is successfully finished\n", sampleId)
 		} else {
+			// TODO Check all output file is fine #22
 			stdoutfileabs, _ := filepath.Abs(stdoutfile.Name())
 			stderrfileabs, _ := filepath.Abs(stderrfile.Name())
 
@@ -642,22 +660,22 @@ func ExecCWL(outputDirectoryPath string, workflowFilePath string, sampleId strin
 	return ""
 }
 
-func getCurrentTime() time.Time {
-	return time.Now()
+func getCurrentTime() string {
+	return time.Now().Format("20060102150405")
 }
 
-func createJobStoreDir(outputDirectoryPath string, sampleId string, currentTime time.Time) string {
-	return outputDirectoryPath + "/jobstores/" + sampleId + "-jobstore-" + currentTime.Format("20060102150405")
+func createJobStoreDir(jobManagerDirectory string) string {
+	return jobManagerDirectory + "/jobStore"
 }
-func createLogFilePath(outputDirectoryPath string, sampleId string, currentTime time.Time) string {
-	return outputDirectoryPath + "/logs/" + sampleId + "-" + currentTime.Format("20060102150405") + ".log"
+func createLogFilePath(jobManagerDirectory string, sampleId string) string {
+	return jobManagerDirectory + "/logs/" + sampleId + ".log"
 }
 
-func createToilCwlRunnerArguments(outputDirectoryPath string, sampleId string, workflowFilePath string) []string {
-	currentTime := getCurrentTime()
-	jobStoreDir := createJobStoreDir(outputDirectoryPath, sampleId, currentTime)
-	logFilePath := createLogFilePath(outputDirectoryPath, sampleId, currentTime)
-	commandArgs := []string{"--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", jobStoreDir, "--outdir", outputDirectoryPath + "/" + sampleId, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", logFilePath, workflowFilePath, sampleId + "_jobfile.yaml"}
+func createToilCwlRunnerArguments(outdir string, jobManagerDirectory string, sampleId string, workflowFilePath string, currentTime string) []string {
+
+	jobStoreDir := createJobStoreDir(jobManagerDirectory)
+	logFilePath := createLogFilePath(jobManagerDirectory, sampleId)
+	commandArgs := []string{"--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--disableCaching", "--jobStore", jobStoreDir, "--outdir", outdir, "--stats", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", logFilePath, workflowFilePath, jobManagerDirectory + "/job-file.yaml"}
 	return commandArgs
 }
 
