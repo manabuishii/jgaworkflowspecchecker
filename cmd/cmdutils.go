@@ -30,27 +30,14 @@ var createSingularityImageScript []byte
  */
 func loadSampleSheetAndConfigFile(args []string) bool {
 	if len(args) != 2 {
-		fmt.Printf("Some required files are not specified.You pass [%d] file(s)\n", len(args))
+		fmt.Printf("Some required files are not specified. You pass [%d] file(s)\n", len(args))
 		fmt.Println("samplesheet_data configfile_data")
 		return false
 	}
 	path, _ := filepath.Abs("./")
 	samplesheet_data_file := args[0]
 	config_data_file := args[1]
-	allfileexist := true
-	if !utils.IsExistsFile(samplesheet_data_file) {
-		fmt.Printf("[%s] is missing sample data file\n", samplesheet_data_file)
-		allfileexist = false
-	}
-	if !utils.IsExistsFile(config_data_file) {
-		fmt.Printf("[%s] is missing config data file\n", config_data_file)
-		allfileexist = false
-	}
-	if !allfileexist {
-		fmt.Println("Some required files are missing. So stop execute")
-		return false
-	}
-	//
+	// Check sample sheet filename and config filename has invalid character.
 	allfilepathisvalidchar := true
 	if !utils.IsOnlyValidCharcterInFilepath(samplesheet_data_file) {
 		fmt.Printf("[%s] has invalid character.\n", samplesheet_data_file)
@@ -62,6 +49,20 @@ func loadSampleSheetAndConfigFile(args []string) bool {
 	}
 	if !allfilepathisvalidchar {
 		fmt.Println("Some required files has invalid character. So stop execute")
+		return false
+	}
+	// Check sample sheet filename and config filename is exist.
+	allfileexist := true
+	if !utils.IsExistsFile(samplesheet_data_file) {
+		fmt.Printf("[%s] is missing sample data file\n", samplesheet_data_file)
+		allfileexist = false
+	}
+	if !utils.IsExistsFile(config_data_file) {
+		fmt.Printf("[%s] is missing config data file\n", config_data_file)
+		allfileexist = false
+	}
+	if !allfileexist {
+		fmt.Println("Some required files are missing. So stop execute")
 		return false
 	}
 	// files are provided. check both files contents.
@@ -206,20 +207,20 @@ func IsAllFilepathInConfigFileHasValidchar(rss *utils.ReferenceSchema) bool {
 		result = false
 	}
 	// ChrX NonPAR
-	if !utils.IsOnlyValidCharcterInFilepath(rss.KnownIndels.Path) {
+	if !utils.IsOnlyValidCharcterInFilepath(rss.HaplotypecallerChrXNonPARIntervalBed.Path) {
 		fmt.Printf("In config file, `haplotypecaller_chrX_nonPAR_interval_bed` path [%s] has invalid character.\n", rss.HaplotypecallerChrXNonPARIntervalBed.Path)
 		result = false
 	}
-	if !utils.IsOnlyValidCharcterInFilepath(rss.KnownIndels.Path) {
+	if !utils.IsOnlyValidCharcterInFilepath(rss.HaplotypecallerChrXNonPARIntervalList.Path) {
 		fmt.Printf("In config file, `haplotypecaller_chrX_nonPAR_interval_list` path [%s] has invalid character.\n", rss.HaplotypecallerChrXNonPARIntervalList.Path)
 		result = false
 	}
 	// ChrY NonPar
-	if !utils.IsOnlyValidCharcterInFilepath(rss.KnownIndels.Path) {
+	if !utils.IsOnlyValidCharcterInFilepath(rss.HaplotypecallerChrYNonPARIntervalBed.Path) {
 		fmt.Printf("In config file, `haplotypecaller_chrY_nonPAR_interval_bed` path [%s] has invalid character.\n", rss.HaplotypecallerChrYNonPARIntervalBed.Path)
 		result = false
 	}
-	if !utils.IsOnlyValidCharcterInFilepath(rss.KnownIndels.Path) {
+	if !utils.IsOnlyValidCharcterInFilepath(rss.HaplotypecallerChrYNonPARIntervalList.Path) {
 		fmt.Printf("In config file, `haplotypecaller_chrY_nonPAR_interval_list` path [%s] has invalid character.\n", rss.HaplotypecallerChrYNonPARIntervalList.Path)
 		result = false
 	}
