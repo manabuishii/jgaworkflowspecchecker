@@ -16,12 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"bufio"
-	"fmt"
 	"os"
 
+	"github.com/manabuishiii/jgaworkflowspecchecker/utils"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 // generateSampleListCmd represents the generateSampleList command
@@ -54,35 +52,6 @@ func generateSampleListMain(args []string) bool {
 	if !loadSuccess {
 		os.Exit(1)
 	}
-	// Create SampleID List
-	sampleIdList := []string{}
-	for _, s := range ss.SampleList {
-		sampleId := s.SampleId
-		sampleIdList = append(sampleIdList, sampleId)
-	}
-	// output
-	d, err := yaml.Marshal(&sampleIdList)
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-		return false
-	}
-
-	// Create Sample List file
-	samplelistfile := rss.OutputDirectory.Path + "/sample_list.yaml"
-	file, err := os.Create(samplelistfile)
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-		return false
-	}
-	defer file.Close()
-	writer := bufio.NewWriter(file)
-	if _, err := writer.WriteString(string(d)); err != nil {
-		fmt.Printf("error: %v\n", err)
-		return false
-	}
-	// Flush
-	writer.Flush()
-	// display sample_list file path
-	fmt.Printf("Sample ID List: %s\n", samplelistfile)
-	return true
+	result := utils.GenerateSampleList(&ss, &rss)
+	return result
 }
