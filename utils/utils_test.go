@@ -190,3 +190,54 @@ func Test_IsInVirtualenv_VIRTUAL_ENV_empty(t *testing.T) {
 
 	assert.False(t, result, "VIRTUAL_ENV is empty so false is expected")
 }
+
+func Test_IsOnlyValidCharcterInFilepath(t *testing.T) {
+	result := IsOnlyValidCharcterInFilepath("/aaaa/bbb/ccc")
+	assert.True(t, result, "/aaaa/bbb/ccc is all valid character")
+}
+func Test_IsOnlyValidCharcterInFilepath_lastcharacter_slash(t *testing.T) {
+	result := IsOnlyValidCharcterInFilepath("/aaaa/bbb/ccc/")
+	assert.True(t, result, "/aaaa/bbb/ccc/ is last character is slash but all character is ")
+}
+
+func Test_IsOnlyValidCharcterInFilepath_period_is_valid_character(t *testing.T) {
+	result := IsOnlyValidCharcterInFilepath("/aaaa/bbb/ccc/a.txt")
+	assert.True(t, result, "/aaaa/bbb/ccc/a.txt is all valid character")
+}
+
+func Test_IsOnlyValidCharcterInFilepath_capital_character_is_valid(t *testing.T) {
+	result := IsOnlyValidCharcterInFilepath("/aaaa/bbb/ccc/ABC")
+	assert.True(t, result, "/aaaa/bbb/ccc/ABC is all valid character")
+}
+func Test_IsOnlyValidCharcterInFilepath_number_character_is_valid(t *testing.T) {
+	result := IsOnlyValidCharcterInFilepath("/aaaa/bbb/ccc/9a")
+	assert.True(t, result, "/aaaa/bbb/ccc/9a is all valid character")
+}
+func Test_IsOnlyValidCharcterInFilepath_hyphen_is_valid(t *testing.T) {
+	result := IsOnlyValidCharcterInFilepath("/aaaa/bbb/ccc/a-b")
+	assert.True(t, result, "/aaaa/bbb/ccc/a-b is all valid character")
+}
+func Test_IsOnlyValidCharcterInFilepath_underbar_is_valid(t *testing.T) {
+	result := IsOnlyValidCharcterInFilepath("/aaaa/bbb/ccc/a_b")
+	assert.True(t, result, "/aaaa/bbb/ccc/a_b is all valid character")
+}
+
+func Test_IsOnlyValidCharcterInFilepath_comma(t *testing.T) {
+	result := IsOnlyValidCharcterInFilepath("/aaa,a/bbb/ccc")
+	assert.False(t, result, "/aaa,a/bbb/ccc has ',' invalid charcter")
+}
+
+func Test_IsOnlyValidCharcterInFilepath_dollmark(t *testing.T) {
+	result := IsOnlyValidCharcterInFilepath("/aaaa/b$bb/ccc")
+	assert.False(t, result, "/aaaa/b$bb/ccc has '$' invalid charcter")
+}
+
+func Test_IsOnlyValidCharcterInFilepath_colon(t *testing.T) {
+	result := IsOnlyValidCharcterInFilepath("/aaaa/bbb/c:cc")
+	assert.False(t, result, "/aaaa/bbb/c:cc has ':' invalid charcter")
+}
+
+func Test_IsOnlyValidCharcterInFilepath_semicolon(t *testing.T) {
+	result := IsOnlyValidCharcterInFilepath("/aaaa/bbb/c;cc")
+	assert.False(t, result, "/aaaa/bbb/c;cc has ';' invalid charcter")
+}

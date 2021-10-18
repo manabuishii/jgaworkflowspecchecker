@@ -1,0 +1,18 @@
+{
+        "name": "nig",
+    "samplelist": [
+        {
+            "sampleid": "NA12878",
+            "platform": "Illumina NovaSeq6000",
+            "runlist": [
+                {
+                    "runid": "ERR3239334",
+                    "data": {
+                        "se_or_pe": "SE",
+                        "fq1": "../test/samplefiles/dummy.fq1.fa"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -65,6 +66,21 @@ type ReferenceSchema struct {
 	HaplotypecallerChrXNonPARIntervalList  *PathOnlyObject `json:"haplotypecaller_chrX_nonPAR_interval_list"`
 	HaplotypecallerChrYNonPARIntervalBed   *PathOnlyObject `json:"haplotypecaller_chrY_nonPAR_interval_bed"`
 	HaplotypecallerChrYNonPARIntervalList  *PathOnlyObject `json:"haplotypecaller_chrY_nonPAR_interval_list"`
+}
+
+// valid character expression
+var re = regexp.MustCompile(`[\dA-Za-z_.-]*`)
+
+func IsOnlyValidCharcterInFilepath(filename string) bool {
+	result := true
+	fields := strings.Split(filename, string(os.PathSeparator))
+	for _, field := range fields {
+		res := re.FindAllStringSubmatch(field, -1)
+		if !(len(res) == 1) {
+			result = false
+		}
+	}
+	return result
 }
 
 func outputReference(rss *ReferenceSchema) (string, error) {
