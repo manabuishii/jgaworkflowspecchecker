@@ -40,12 +40,6 @@ type SimpleSchema struct {
 	SampleList []*Sample `json:"samplelist"`
 }
 
-// path and format
-type PathObject struct {
-	Path   string `json:"path"`
-	Format string `json:"format"`
-}
-
 // path only
 type PathOnlyObject struct {
 	Path string `json:"path"`
@@ -55,21 +49,21 @@ type ReferenceSchema struct {
 	WorkflowFile            *PathOnlyObject `json:"workflow_file"`
 	OutputDirectory         *PathOnlyObject `json:"output_directory"`
 	ContainerCacheDirectory *PathOnlyObject `json:"container_cache_directory"`
-	Reference               *PathObject     `json:"reference"`
+	Reference               *PathOnlyObject `json:"reference"`
 	SortsamMaxRecordsInRam  int             `json:"sortsam_max_records_in_ram"`
 	SortsamJavaOptions      string          `json:"sortsam_java_options"`
 	Cores                   int             `json:"cores"`
 
 	BwaBasesPerBatch                       int             `json:"bwa_bases_per_batch"`
 	UseBqsr                                bool            `json:"use_bqsr"`
-	Dbsnp                                  *PathObject     `json:"dbsnp"`
-	Mills                                  *PathObject     `json:"mills"`
-	KnownIndels                            *PathObject     `json:"known_indels"`
-	HaplotypecallerAutosomePARIntervalBed  *PathObject     `json:"haplotypecaller_autosome_PAR_interval_bed"`
+	Dbsnp                                  *PathOnlyObject `json:"dbsnp"`
+	Mills                                  *PathOnlyObject `json:"mills"`
+	KnownIndels                            *PathOnlyObject `json:"known_indels"`
+	HaplotypecallerAutosomePARIntervalBed  *PathOnlyObject `json:"haplotypecaller_autosome_PAR_interval_bed"`
 	HaplotypecallerAutosomePARIntervalList *PathOnlyObject `json:"haplotypecaller_autosome_PAR_interval_list"`
-	HaplotypecallerChrXNonPARIntervalBed   *PathObject     `json:"haplotypecaller_chrX_nonPAR_interval_bed"`
+	HaplotypecallerChrXNonPARIntervalBed   *PathOnlyObject `json:"haplotypecaller_chrX_nonPAR_interval_bed"`
 	HaplotypecallerChrXNonPARIntervalList  *PathOnlyObject `json:"haplotypecaller_chrX_nonPAR_interval_list"`
-	HaplotypecallerChrYNonPARIntervalBed   *PathObject     `json:"haplotypecaller_chrY_nonPAR_interval_bed"`
+	HaplotypecallerChrYNonPARIntervalBed   *PathOnlyObject `json:"haplotypecaller_chrY_nonPAR_interval_bed"`
 	HaplotypecallerChrYNonPARIntervalList  *PathOnlyObject `json:"haplotypecaller_chrY_nonPAR_interval_list"`
 }
 

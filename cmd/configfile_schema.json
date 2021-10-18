@@ -46,10 +46,6 @@
           "path": {
             "description": "File path of reference",
             "type": "string"
-          },
-          "format": {
-            "description": "Format of reference",
-            "type": "string"
           }
         },
         "required": [ "path" ]
@@ -82,10 +78,6 @@
           "path": {
             "description": "File path of dbsnp",
             "type": "string"
-          },
-          "format": {
-            "description": "Format of dbsnp",
-            "type": "string"
           }
         },
         "required": [ "path" ]
@@ -97,10 +89,6 @@
         "properties": {
           "path": {
             "description": "File path of mills",
-            "type": "string"
-          },
-          "format": {
-            "description": "Format of mills",
             "type": "string"
           }
         },
@@ -114,10 +102,6 @@
           "path": {
             "description": "File path of known_indels",
             "type": "string"
-          },
-          "format": {
-            "description": "Format of known_indels",
-            "type": "string"
           }
         },
         "required": [ "path" ]
@@ -129,10 +113,6 @@
         "properties": {
           "path": {
             "description": "File path of haplotypecaller_autosome_PAR_interval_bed",
-            "type": "string"
-          },
-          "format": {
-            "description": "Format of haplotypecaller_autosome_PAR_interval_bed",
             "type": "string"
           }
         },
@@ -158,10 +138,6 @@
           "path": {
             "description": "File path of haplotypecaller_chrX_nonPAR_interval_bed chrX_nonPAR ploidy 1 and ploidy 2",
             "type": "string"
-          },
-          "format": {
-            "description": "Format of haplotypecaller_chrX_nonPAR_interval_bed",
-            "type": "string"
           }
         },
         "required": [ "path" ]
@@ -186,10 +162,6 @@
           "path": {
             "description": "File path of haplotypecaller_chrY_nonPAR_interval_bed",
             "type": "string"
-          },
-          "format": {
-            "description": "Format of haplotypecaller_chrY_nonPAR_interval_bed",
-            "type": "string"
           }
         },
         "required": [ "path" ]
@@ -201,10 +173,6 @@
         "properties": {
           "path": {
             "description": "File path of haplotypecaller_chrY_nonPAR_interval_list",
-            "type": "string"
-          },
-          "format": {
-            "description": "Format of haplotypecaller_chrY_nonPAR_interval_list",
             "type": "string"
           }
         },
