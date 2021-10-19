@@ -180,6 +180,8 @@ func runmain(args []string) {
 			fmt.Println("Can not copy files to output direcoty")
 			os.Exit(1)
 		}
+		// Generate sample id list
+		utils.GenerateSampleList(&ss, &rss)
 	}
 
 	// exec and wait

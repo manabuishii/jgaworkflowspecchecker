@@ -13,6 +13,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v2"
 )
 
 type RunData struct {
@@ -760,4 +762,38 @@ func CreateExecuteSampleIDList(outputDirectoryPath string, ss *SimpleSchema) []s
 		}
 	}
 	return result
+}
+
+func GenerateSampleList(ss *SimpleSchema, rss *ReferenceSchema) bool {
+	// Create SampleID List
+	sampleIdList := []string{}
+	for _, s := range ss.SampleList {
+		sampleId := s.SampleId
+		sampleIdList = append(sampleIdList, sampleId)
+	}
+	// output
+	d, err := yaml.Marshal(&sampleIdList)
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+		return false
+	}
+
+	// Create Sample List file
+	samplelistfile := rss.OutputDirectory.Path + "/sample_list.yaml"
+	file, err := os.Create(samplelistfile)
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+		return false
+	}
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	if _, err := writer.WriteString(string(d)); err != nil {
+		fmt.Printf("error: %v\n", err)
+		return false
+	}
+	// Flush
+	writer.Flush()
+	// display sample_list file path
+	fmt.Printf("Sample ID List: %s\n", samplelistfile)
+	return true
 }
