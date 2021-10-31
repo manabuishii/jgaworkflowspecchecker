@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -213,4 +216,83 @@ func Test_loadSampleSheetAndConfigFile_configfile_haplotypecaller_chrY_nonPAR_in
 	rssresult := IsAllFilepathInConfigFileHasValidchar(&rss)
 
 	assert.False(t, rssresult, "rss.HaplotypecallerChrYNonPARIntervalList.Path has invalid character")
+}
+func Test_IsSameFilePath(t *testing.T) {
+	result := IsSameFilePath("../test/datafiles/samplesheet_1run-SE-test.json", "../test/datafiles/samplesheet_1run-SE-test.json")
+	assert.True(t, result, "The same file")
+}
+func Test_IsSameFilePath_different_file(t *testing.T) {
+	result := IsSameFilePath("../test/datafiles/samplesheet_1run-SE-test.json", "../test/datafiles/samplesheet_1run-SE-test.json.bak")
+	assert.False(t, result, "The different file")
+}
+func Test_IsSameFilePath_symlink(t *testing.T) {
+	// create temp directory
+	tmpDir := t.TempDir()
+	// create temporary file
+	tmpFile := filepath.Join(tmpDir, "tmpFile")
+	err := ioutil.WriteFile(tmpFile, []byte("test"), 0644)
+	assert.NoError(t, err, "create temporary file")
+
+	// create symbolic link
+	symlink := filepath.Join(tmpDir, "symlink")
+	err = os.Symlink(tmpFile, symlink)
+	assert.NoError(t, err, "create symbolic link")
+	result := IsSameFilePath(symlink, tmpFile)
+	assert.True(t, result, "The same file")
+}
+func Test_IsSameFilePath_symlink_different_file(t *testing.T) {
+	// create temp directory
+	tmpDir := t.TempDir()
+	// create temporary file
+	tmpFile := filepath.Join(tmpDir, "tmpFile")
+	err := ioutil.WriteFile(tmpFile, []byte("test"), 0644)
+	assert.NoError(t, err, "create temporary file")
+	// create symbolic link
+	symlink := filepath.Join(tmpDir, "symlink")
+	err = os.Symlink(tmpFile, symlink)
+	assert.NoError(t, err, "create symbolic link")
+	result := IsSameFilePath(symlink, tmpFile+".bak")
+	assert.False(t, result, "The different file")
+}
+func Test_IsSameFilePath_symlink_symlink(t *testing.T) {
+	// create temp directory
+	tmpDir := t.TempDir()
+	// create temporary file
+	tmpFile := filepath.Join(tmpDir, "tmpFile")
+	err := ioutil.WriteFile(tmpFile, []byte("test"), 0644)
+	assert.NoError(t, err, "create temporary file")
+	// create symbolic link
+	symlink := filepath.Join(tmpDir, "symlink")
+	err = os.Symlink(tmpFile, symlink)
+	assert.NoError(t, err, "create symbolic link")
+	// create symbolic link
+	symlink2 := filepath.Join(tmpDir, "symlink2")
+	err = os.Symlink(symlink, symlink2)
+	assert.NoError(t, err, "create symbolic link")
+	result := IsSameFilePath(symlink2, symlink)
+	assert.True(t, result, "The same file")
+}
+
+func Test_IsSameFilePath_symlink_symlink_different_file(t *testing.T) {
+	// create temp directory
+	tmpDir := t.TempDir()
+	// create temporary file
+	tmpFile := filepath.Join(tmpDir, "tmpFile")
+	err := ioutil.WriteFile(tmpFile, []byte("test"), 0644)
+	assert.NoError(t, err, "create temporary file")
+	// create symbolic link
+	symlink := filepath.Join(tmpDir, "symlink")
+	err = os.Symlink(tmpFile, symlink)
+	assert.NoError(t, err, "create symbolic link")
+	// create temporary file
+	tmpFile2 := filepath.Join(tmpDir, "tmpFile2")
+	err = ioutil.WriteFile(tmpFile2, []byte("test"), 0644)
+	assert.NoError(t, err, "create temporary file")
+	// create symbolic link
+	symlink2 := filepath.Join(tmpDir, "symlink2")
+	err = os.Symlink(tmpFile2, symlink2)
+	assert.NoError(t, err, "create symbolic link")
+	result := IsSameFilePath(symlink2, symlink)
+	assert.False(t, result, "The different file")
+
 }

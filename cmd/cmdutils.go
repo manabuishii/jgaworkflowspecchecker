@@ -34,7 +34,6 @@ func loadSampleSheetAndConfigFile(args []string) bool {
 		fmt.Println("samplesheet_data configfile_data")
 		return false
 	}
-	path, _ := filepath.Abs("./")
 	samplesheet_data_file := args[0]
 	config_data_file := args[1]
 	// Check sample sheet filename and config filename has invalid character.
@@ -70,7 +69,8 @@ func loadSampleSheetAndConfigFile(args []string) bool {
 	// sample sheet schema provided by embed.
 	schemaLoader := gojsonschema.NewStringLoader(string(samplesheetfileBytes))
 	// MUST must be canonical
-	documentLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + samplesheet_data_file)
+	sampplesheet_data_file_abs, _ := filepath.Abs(samplesheet_data_file)
+	documentLoader := gojsonschema.NewReferenceLoader("file://" + sampplesheet_data_file_abs)
 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
@@ -104,7 +104,8 @@ func loadSampleSheetAndConfigFile(args []string) bool {
 	// configfile loader strings are embed variable
 	rschemaLoader := gojsonschema.NewStringLoader(string(configfileBytes))
 	// MUST must be canonical
-	rdocumentLoader := gojsonschema.NewReferenceLoader("file://" + path + "/" + config_data_file)
+	config_data_file_abs, _ := filepath.Abs(config_data_file)
+	rdocumentLoader := gojsonschema.NewReferenceLoader("file://" + config_data_file_abs)
 
 	rresult, err := gojsonschema.Validate(rschemaLoader, rdocumentLoader)
 	if err != nil {
@@ -225,4 +226,36 @@ func IsAllFilepathInConfigFileHasValidchar(rss *utils.ReferenceSchema) bool {
 		result = false
 	}
 	return result
+}
+
+/*
+IsSameFilePath is to check if the filepath is same
+
+Return:
+	true: if the filepath is same
+	false: if the filepath is different
+
+*/
+func IsSameFilePath(src, dst string) bool {
+	// check if the filepath is same
+	// convert to absolute path
+	srcAbs, err := filepath.Abs(src)
+	if err != nil {
+		fmt.Printf("Error in IsSameFilePath: %s\n", err.Error())
+	}
+	dstAbs, err := filepath.Abs(dst)
+	if err != nil {
+		fmt.Printf("Error in IsSameFilePath: %s\n", err.Error())
+	}
+	// resolve symbolic link
+	srcAbs, err = filepath.EvalSymlinks(srcAbs)
+	if err != nil {
+		fmt.Printf("Error in IsSameFilePath: %s\n", err.Error())
+	}
+	dstAbs, err = filepath.EvalSymlinks(dstAbs)
+	if err != nil {
+		fmt.Printf("Error in IsSameFilePath: %s\n", err.Error())
+	}
+	// compare
+	return srcAbs == dstAbs
 }
