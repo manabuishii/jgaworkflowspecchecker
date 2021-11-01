@@ -43,6 +43,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf(utils.BuildVersionString(Version, Revision, Date))
 		runmain(args)
 	},
 }
@@ -65,41 +66,53 @@ func init() {
 }
 func copyFiles(outputDirectoryPath string, samplesheet_data_file string, config_data_file string) bool {
 	// copy sample_sheet file
-	original_sample_sheet, err := os.Open(samplesheet_data_file)
-	if err != nil {
-		fmt.Println(err)
+	sampleSheetDst := outputDirectoryPath + "/" + filepath.Base(samplesheet_data_file)
+	// check sample sheet file is same
+	if IsSameFilePath(samplesheet_data_file, sampleSheetDst) {
+		fmt.Println("Sample sheet file is in output directory backup file. So do not copy")
+	} else {
+
+		original_sample_sheet, err := os.Open(samplesheet_data_file)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer original_sample_sheet.Close()
+		copied_sample_sheet, err := os.Create(sampleSheetDst)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+		defer copied_sample_sheet.Close()
+		_, err = io.Copy(copied_sample_sheet, original_sample_sheet)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
 	}
-	defer original_sample_sheet.Close()
-	copied_sample_sheet, err := os.Create(outputDirectoryPath + "/" + filepath.Base(samplesheet_data_file))
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
-	defer copied_sample_sheet.Close()
-	_, err = io.Copy(copied_sample_sheet, original_sample_sheet)
-	if err != nil {
-		fmt.Println(err)
-		return false
+	// copy config file
+	configFileDst := outputDirectoryPath + "/" + filepath.Base(config_data_file)
+	// check config file is same
+	if IsSameFilePath(config_data_file, configFileDst) {
+		fmt.Println("Config file is in output directory backup file. So do not copy")
+	} else {
+		original_config_file, err := os.Open(config_data_file)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer original_config_file.Close()
+		copied_config_file, err := os.Create(configFileDst)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+		defer copied_config_file.Close()
+		_, err = io.Copy(copied_config_file, original_config_file)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
 	}
 
-	// copy config file
-	original_configfile, err := os.Open(config_data_file)
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
-	defer original_configfile.Close()
-	copied_configfile, err := os.Create(outputDirectoryPath + "/" + filepath.Base((config_data_file)))
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
-	defer copied_configfile.Close()
-	_, err = io.Copy(copied_configfile, original_configfile)
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
 	return true
 }
 
