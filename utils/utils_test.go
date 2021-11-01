@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"io/ioutil"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -240,4 +242,50 @@ func Test_IsOnlyValidCharcterInFilepath_colon(t *testing.T) {
 func Test_IsOnlyValidCharcterInFilepath_semicolon(t *testing.T) {
 	result := IsOnlyValidCharcterInFilepath("/aaaa/bbb/c;cc")
 	assert.False(t, result, "/aaaa/bbb/c;cc has ';' invalid charcter")
+}
+
+func Test_SortByFileNameOrderDesc(t *testing.T) {
+	files, _ := ioutil.ReadDir("../test/jobManager")
+	// First sort by Asc Order
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Name() < files[j].Name()
+	})
+	// Next sort by Desc Order
+	SortByFileNameOrderDesc(files)
+	assert.Equal(t, files[0].Name(), "20211101145001")
+	assert.Equal(t, files[1].Name(), "20211101143242")
+	assert.Equal(t, files[2].Name(), "20211101142745")
+	assert.Equal(t, files[3].Name(), "20211101141356")
+	assert.Equal(t, files[4].Name(), "20211101140603")
+	assert.Equal(t, files[5].Name(), "20211101124751")
+}
+
+func Test_RemoveStringFromSlice(t *testing.T) {
+	sliceOrg := []string{"a", "b", "c", "d", "e"}
+	slice := RemoveStringFromSlice(sliceOrg, "a")
+	assert.Equal(t, len(slice), 4)
+	assert.Equal(t, slice[0], "b")
+	assert.Equal(t, slice[1], "c")
+	assert.Equal(t, slice[2], "d")
+	assert.Equal(t, slice[3], "e")
+}
+
+func Test_RemoveStringFromSlice_last(t *testing.T) {
+	sliceOrg := []string{"a", "b", "c", "d", "e"}
+	slice := RemoveStringFromSlice(sliceOrg, "e")
+	assert.Equal(t, len(slice), 4)
+	assert.Equal(t, slice[0], "a")
+	assert.Equal(t, slice[1], "b")
+	assert.Equal(t, slice[2], "c")
+	assert.Equal(t, slice[3], "d")
+}
+
+func Test_RemoveStringFromSlice_center(t *testing.T) {
+	sliceOrg := []string{"a", "b", "c", "d", "e"}
+	slice := RemoveStringFromSlice(sliceOrg, "c")
+	assert.Equal(t, len(slice), 4)
+	assert.Equal(t, slice[0], "a")
+	assert.Equal(t, slice[1], "b")
+	assert.Equal(t, slice[2], "d")
+	assert.Equal(t, slice[3], "e")
 }

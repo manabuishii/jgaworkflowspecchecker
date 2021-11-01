@@ -79,6 +79,7 @@ func showJobProgress(args []string) {
 
 	// Setup output directory
 	outputDirectoryPath := rss.OutputDirectory.Path
+	// Create Sample id list will be executed
 	execSampleIdList := utils.CreateExecuteSampleIDList(outputDirectoryPath, &ss)
 	if displayfinish {
 		//
@@ -88,6 +89,8 @@ func showJobProgress(args []string) {
 			}
 		}
 	}
+	// TODO display execute information
+	DisplayJobInfo(outputDirectoryPath, execSampleIdList)
 	if displaynew {
 		for _, s := range execSampleIdList {
 			fmt.Printf("%s will be Execute new.\n", s)

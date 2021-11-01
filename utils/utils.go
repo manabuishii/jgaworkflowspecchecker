@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -847,4 +848,20 @@ func LogStderr(logfile string) func() {
 		<-exit
 		_ = f.Close()
 	}
+}
+
+func SortByFileNameOrderDesc(files []os.FileInfo) {
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Name() > files[j].Name()
+	})
+}
+
+func RemoveStringFromSlice(stringSlice []string, item string) []string {
+	for i, v := range stringSlice {
+		if v == item {
+			stringSlice = append(stringSlice[:i], stringSlice[i+1:]...)
+			break
+		}
+	}
+	return stringSlice
 }
