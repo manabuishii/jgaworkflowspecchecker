@@ -296,3 +296,18 @@ func Test_IsSameFilePath_symlink_symlink_different_file(t *testing.T) {
 	assert.False(t, result, "The different file")
 
 }
+
+func Test_getExitCodeContent(t *testing.T) {
+	result := getExitCodeContent("../test/jobManager/20211101145001/XX00001/toil.exitcode.txt")
+	assert.Equal(t, "1", result, "Exit code 1")
+}
+
+func Test_getExitCodeContent_otherfile(t *testing.T) {
+	result := getExitCodeContent("../test/jobManager/20211101143242/XX00002/toil.exitcode.txt")
+	assert.Equal(t, "1", result, "Exit code 1")
+}
+
+func Test_getExitCodeContent_exitcode_0(t *testing.T) {
+	result := getExitCodeContent("../test/jobManager/20211101143242/XX00003/toil.exitcode.txt")
+	assert.Equal(t, "0", result, "Exit code 0")
+}

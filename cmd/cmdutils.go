@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"bufio"
 	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/manabuishiii/jgaworkflowspecchecker/utils"
@@ -258,4 +260,82 @@ func IsSameFilePath(src, dst string) bool {
 	}
 	// compare
 	return srcAbs == dstAbs
+}
+
+func DisplayJobInfo(outputDirectoryPath string, execSampleIdList []string) {
+	jobManagerExecutedFiles, err := ioutil.ReadDir(outputDirectoryPath + "/jobManager")
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+	} else {
+		// sort jobManager directories by name
+		utils.SortByFileNameOrderDesc(jobManagerExecutedFiles)
+		// copy execSampleIdList to notfinishSampleIdList
+		notfinishSampleIdList := make([]string, len(execSampleIdList))
+		copy(notfinishSampleIdList, execSampleIdList)
+		for _, notFinishedSampleId := range notfinishSampleIdList {
+			for _, jobManagerTimestampDirectory := range jobManagerExecutedFiles {
+				// jobManagerTimestampDirectory is directory
+				// check exitcode  file
+				sampleIdPath := outputDirectoryPath + "/jobManager/" + jobManagerTimestampDirectory.Name() + "/" + notFinishedSampleId
+				exitcodeFilePath := sampleIdPath + "/toil.exitcode.txt"
+				isExitCodeFileExist := utils.IsExistsFile(exitcodeFilePath)
+				isError := false
+				exitCode := ""
+				if isExitCodeFileExist {
+					// if file content is "0", then remove from notfinishSampleIdList
+					exitCode = getExitCodeContent(exitcodeFilePath)
+					if exitCode != "0" {
+						// investigate next SampleId
+						isError = true
+					} else {
+						// content is "0", this is happens something wrong
+						// because notfinishSampleIdList is only contains sampleId that is not finished.
+						isError = true
+						fmt.Printf("Error: Something wrong SampleId[%s] is exitcode 0. but not created result directory under output_path\n", notFinishedSampleId)
+					}
+				} else {
+					isError = true
+				}
+				if isError {
+					// display
+					fmt.Printf("Sample ID: [%s] has error\n", notFinishedSampleId)
+					// display exitcode
+					if isExitCodeFileExist {
+						fmt.Printf(" ExitCode: [%s]\n", exitCode)
+					} else {
+						fmt.Print(" ExitCode file is missing. CWL execution is seemed to be complete\n")
+					}
+					// display stdout
+					stdoutFilePath := sampleIdPath + "/toil.stdout.txt"
+					if utils.IsExistsFile(stdoutFilePath) {
+						fmt.Printf(" Stdout: [%s]\n", stdoutFilePath)
+					} else {
+						fmt.Printf(" Stdout file is missing. expect path is [%s]\n", stdoutFilePath)
+					}
+					// display stderr
+					stderrFilePath := sampleIdPath + "/toil.stderr.txt"
+					if utils.IsExistsFile(stderrFilePath) {
+						fmt.Printf(" Stderr: [%s]\n", stderrFilePath)
+					} else {
+						fmt.Printf(" Stderr file is missing. expect path is [%s]\n", stderrFilePath)
+					}
+					//
+					break
+				}
+			}
+		}
+	}
+}
+
+func getExitCodeContent(exitcodeFilePath string) string {
+	// read exitCodeFilePath
+	exitCodeFile, err := os.Open(exitcodeFilePath)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+	}
+	defer exitCodeFile.Close()
+	scanner := bufio.NewScanner(exitCodeFile)
+	scanner.Scan()
+	exitCode := scanner.Text()
+	return exitCode
 }
