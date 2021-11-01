@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -630,13 +631,17 @@ func CheckAllResultFiles(outputDirectoryPath string, s *Sample) bool {
 	return allExists
 }
 
-func ExecCWL(sample *Sample, rss *ReferenceSchema) string {
+func ExecCWL(sample *Sample, rss *ReferenceSchema, currentTime string) string {
 	sampleId := sample.SampleId
 	// execute toil
 	//p, _ := os.Getwd()
 	// c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
-	currentTime := getCurrentTime()
-	jobManagerDirectory := rss.OutputDirectory.Path + "/jobManager/" + currentTime + "/" + sampleId
+
+	// JobManager Top Direcotry
+	// This directory is used to store Samples and jobmanager it self logs
+	jobManagerTopDirectory := rss.OutputDirectory.Path + "/jobManager/" + currentTime
+	// JobManager per Sample Directory
+	jobManagerDirectory := jobManagerTopDirectory + "/" + sampleId
 	if err := os.MkdirAll(jobManagerDirectory, 0755); err != nil {
 		fmt.Println(err)
 		fmt.Println("cannot create output directory")
@@ -716,7 +721,7 @@ func ExecCWL(sample *Sample, rss *ReferenceSchema) string {
 	return ""
 }
 
-func getCurrentTime() string {
+func GetCurrentTime() string {
 	return time.Now().Format("20060102150405")
 }
 
@@ -796,4 +801,50 @@ func GenerateSampleList(ss *SimpleSchema, rss *ReferenceSchema) bool {
 	// display sample_list file path
 	fmt.Printf("Sample ID List: %s\n", samplelistfile)
 	return true
+}
+
+func LogStdout(logfile string) func() {
+	f, _ := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	out := os.Stdout
+	mw := io.MultiWriter(out, f)
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	log.SetOutput(mw)
+	exit := make(chan bool)
+
+	go func() {
+		_, _ = io.Copy(mw, r)
+		exit <- true
+	}()
+
+	return func() {
+		_ = w.Close()
+		<-exit
+		_ = f.Close()
+	}
+
+}
+
+func LogStderr(logfile string) func() {
+	f, _ := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+
+	out := os.Stderr
+	mw := io.MultiWriter(out, f)
+	r, w, _ := os.Pipe()
+
+	os.Stderr = w
+	//log.SetOutput(mw)
+
+	exit := make(chan bool)
+
+	go func() {
+		_, _ = io.Copy(mw, r)
+		exit <- true
+	}()
+
+	return func() {
+		_ = w.Close()
+		<-exit
+		_ = f.Close()
+	}
 }

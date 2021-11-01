@@ -241,20 +241,20 @@ func IsSameFilePath(src, dst string) bool {
 	// convert to absolute path
 	srcAbs, err := filepath.Abs(src)
 	if err != nil {
-		fmt.Printf("Error in IsSameFilePath: %s\n", err.Error())
+		fmt.Printf("Error Abs src in IsSameFilePath: %s\n", err.Error())
 	}
 	dstAbs, err := filepath.Abs(dst)
 	if err != nil {
-		fmt.Printf("Error in IsSameFilePath: %s\n", err.Error())
+		fmt.Printf("Error Abs dst IsSameFilePath: %s\n", err.Error())
 	}
 	// resolve symbolic link
 	srcAbs, err = filepath.EvalSymlinks(srcAbs)
 	if err != nil {
-		fmt.Printf("Error in IsSameFilePath: %s\n", err.Error())
+		fmt.Printf("Error SymLink src in IsSameFilePath: %s\n", err.Error())
 	}
 	dstAbs, err = filepath.EvalSymlinks(dstAbs)
 	if err != nil {
-		fmt.Printf("Error in IsSameFilePath: %s\n", err.Error())
+		fmt.Printf("Error SymLink dst in IsSameFilePath: %s\n", err.Error())
 	}
 	// compare
 	return srcAbs == dstAbs
