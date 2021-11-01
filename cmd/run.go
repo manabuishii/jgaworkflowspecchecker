@@ -36,14 +36,10 @@ var fileHashCheckFlag bool
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run workflow",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long: `Run workflow. When to actually to execute workflow, create output directory.
+	And stdout and sterr is redirected to output directory.
+	If '--dry-run' flag is set, it only display information do not create directory`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf(utils.BuildVersionString(Version, Revision, Date))
 		runmain(args)
 	},
 }
@@ -166,6 +162,35 @@ func runmain(args []string) {
 	if !checkConfigFile(&rss) {
 		return
 	}
+	// Get Current Time for output directory
+	currentTime := utils.GetCurrentTime()
+	// Create JobManager Top level directory
+	// Setup stdout and stderr to Console and Files (JobManager Top Level Directory).
+	if !dryrunFlag {
+		// JobManager Top Direcotry
+		// This directory is used to store Samples and jobmanager it self logs
+		jobManagerTopDirectory := rss.OutputDirectory.Path + "/jobManager/" + currentTime
+		if err := os.MkdirAll(jobManagerTopDirectory, 0755); err != nil {
+			fmt.Println(err)
+			fmt.Println("cannot create JobManager Top Directory")
+			return
+		}
+		// for jobmanager log files
+		// Setup log files
+		// Stdout and Stderr are redirected to log files
+		// if not create , show error message and exit
+		jobmanagerstdoutfile := utils.LogStdout(jobManagerTopDirectory + "/jobmanager-stdout.log")
+		defer jobmanagerstdoutfile()
+		jobmanagerstderrfile := utils.LogStderr(jobManagerTopDirectory + "/jobmanager-stderr.log")
+		defer jobmanagerstderrfile()
+		// Display Version
+		fmt.Print(utils.BuildVersionString(Version, Revision, Date))
+		// Display JobManager Top Directory
+		fmt.Println("JobManager Top Directory: " + jobManagerTopDirectory)
+	} else {
+		// Display Version
+		fmt.Print(utils.BuildVersionString(Version, Revision, Date))
+	}
 	//
 	foundToilCWLRunner := utils.IsExistsToilCWLRunner()
 
@@ -214,7 +239,7 @@ func runmain(args []string) {
 					var sampleForExecCWL utils.Sample
 					copier.Copy(&sampleForExecCWL, &s)
 					eg.Go(func() error {
-						utils.ExecCWL(&sampleForExecCWL, &rss)
+						utils.ExecCWL(&sampleForExecCWL, &rss, currentTime)
 						return nil
 					})
 				}

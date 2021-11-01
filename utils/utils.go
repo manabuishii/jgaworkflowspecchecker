@@ -631,26 +631,22 @@ func CheckAllResultFiles(outputDirectoryPath string, s *Sample) bool {
 	return allExists
 }
 
-func ExecCWL(sample *Sample, rss *ReferenceSchema) string {
+func ExecCWL(sample *Sample, rss *ReferenceSchema, currentTime string) string {
 	sampleId := sample.SampleId
 	// execute toil
 	//p, _ := os.Getwd()
 	// c1 := exec.Command("toil-cwl-runner", "--maxDisk", "248G", "--maxMemory", "64G", "--defaultMemory", "32000", "--defaultDisk", "32000", "--workDir", p, "--disableCaching", "--jobStore", "./"+sampleId+"-jobstore", "--outdir", "./"+sampleId, "--stats", "--cleanWorkDir", "never", "--batchSystem", "slurm", "--retryCount", "1", "--singularity", "--logFile", sampleId+".log", "per-sample/Workflows/per-sample.cwl", sampleId+"_jobfile.yaml")
-	currentTime := getCurrentTime()
-	jobManagerDirectory := rss.OutputDirectory.Path + "/jobManager/" + currentTime + "/" + sampleId
+
+	// JobManager Top Direcotry
+	// This directory is used to store Samples and jobmanager it self logs
+	jobManagerTopDirectory := rss.OutputDirectory.Path + "/jobManager/" + currentTime
+	// JobManager per Sample Directory
+	jobManagerDirectory := jobManagerTopDirectory + "/" + sampleId
 	if err := os.MkdirAll(jobManagerDirectory, 0755); err != nil {
 		fmt.Println(err)
 		fmt.Println("cannot create output directory")
 		return "cannot create output directory"
 	}
-	// for jobmanager log files
-	// Setup log files
-	// Stdout and Stderr are redirected to log files
-	// if not create , show error message and exit
-	jobmanagerstdoutfile := LogStdout(jobManagerDirectory + "/jobmanager-stdout.log")
-	defer jobmanagerstdoutfile()
-	jobmanagerstderrfile := LogStderr(jobManagerDirectory + "/jobmanager-stderr.log")
-	defer jobmanagerstderrfile()
 	// for toil-cwl-runner created logfile
 	if err := os.MkdirAll(jobManagerDirectory+"/logs", 0755); err != nil {
 		fmt.Println(err)
@@ -725,7 +721,7 @@ func ExecCWL(sample *Sample, rss *ReferenceSchema) string {
 	return ""
 }
 
-func getCurrentTime() string {
+func GetCurrentTime() string {
 	return time.Now().Format("20060102150405")
 }
 
