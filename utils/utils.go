@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -642,6 +643,14 @@ func ExecCWL(sample *Sample, rss *ReferenceSchema) string {
 		fmt.Println("cannot create output directory")
 		return "cannot create output directory"
 	}
+	// for jobmanager log files
+	// Setup log files
+	// Stdout and Stderr are redirected to log files
+	// if not create , show error message and exit
+	jobmanagerstdoutfile := LogStdout(jobManagerDirectory + "/jobmanager-stdout.log")
+	defer jobmanagerstdoutfile()
+	jobmanagerstderrfile := LogStderr(jobManagerDirectory + "/jobmanager-stderr.log")
+	defer jobmanagerstderrfile()
 	// for toil-cwl-runner created logfile
 	if err := os.MkdirAll(jobManagerDirectory+"/logs", 0755); err != nil {
 		fmt.Println(err)
@@ -796,4 +805,50 @@ func GenerateSampleList(ss *SimpleSchema, rss *ReferenceSchema) bool {
 	// display sample_list file path
 	fmt.Printf("Sample ID List: %s\n", samplelistfile)
 	return true
+}
+
+func LogStdout(logfile string) func() {
+	f, _ := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	out := os.Stdout
+	mw := io.MultiWriter(out, f)
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	log.SetOutput(mw)
+	exit := make(chan bool)
+
+	go func() {
+		_, _ = io.Copy(mw, r)
+		exit <- true
+	}()
+
+	return func() {
+		_ = w.Close()
+		<-exit
+		_ = f.Close()
+	}
+
+}
+
+func LogStderr(logfile string) func() {
+	f, _ := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+
+	out := os.Stderr
+	mw := io.MultiWriter(out, f)
+	r, w, _ := os.Pipe()
+
+	os.Stderr = w
+	//log.SetOutput(mw)
+
+	exit := make(chan bool)
+
+	go func() {
+		_, _ = io.Copy(mw, r)
+		exit <- true
+	}()
+
+	return func() {
+		_ = w.Close()
+		<-exit
+		_ = f.Close()
+	}
 }
